@@ -1,0 +1,304 @@
+@page "/dashboard"
+@using JournalApp.Services
+@using JournalApp.Data
+@using JournalApp.Models
+
+@* [VIVA INFO]: The Dashboard is the central 'Landing Hub' after login. 
+   It provides a high-level overview (Recent Entries + Quick Stats).
+*@
+<PageTitle>Overview - Reflecta</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-12">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-6 rounded-lg shadow-sm" ShowCloseIcon="true" CloseIconClicked="(() => errorMessage = string.Empty)">
+            @errorMessage
+        </MudAlert>
+    }
+
+    <div class="d-flex align-center justify-space-between mb-8 animate-fade-in">
+        <div>
+            <MudText Typo="Typo.h3" Class="fw-bold primary-gradient-text">Welcome back, @AuthState.GetCurrentUsername()</MudText>
+            <MudText Typo="Typo.h6" Class="secondary-text mt-1 opacity-75">A quiet overview of your recent reflections and progress.</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.EditNote" Size="Size.Large" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="rounded-pill px-8 py-3 shadow-lg hover-scale">
+            Write Reflection
+        </MudButton>
+        
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height: 50vh;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" Thickness="5" />
+        </div>
+    }
+    else
+    {
+        <!-- Stats Row -->
+        <MudGrid Class="mb-10">
+            <MudItem xs="12" sm="6" md="3">
+                <div class="stat-card glass shadow-lg border-light vibrant-card">
+                    <div class="stat-content">
+                        <MudText Typo="Typo.h3" Class="fw-extra-bold primary-text">@(analytics?.TotalEntries ?? 0)</MudText>
+                        <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Total Entries</MudText>
+                    </div>
+                    <div class="stat-icon-wrapper primary-fade">
+                        <MudIcon Icon="@Icons.Material.Filled.HistoryEdu" Color="Color.Primary" />
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <div class="stat-card glass shadow-lg border-light vibrant-card">
+                    <div class="stat-content">
+                        <MudText Typo="Typo.h3" Class="fw-extra-bold secondary-text">@(analytics?.CurrentStreak ?? 0)</MudText>
+                        <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Current Streak</MudText>
+                    </div>
+                    <div class="stat-icon-wrapper secondary-fade">
+                        <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Color="Color.Secondary" />
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <div class="stat-card glass shadow-sm border-light">
+                    <div class="stat-content">
+                        <MudText Typo="Typo.h3" Class="fw-extra-bold success-text">@(analytics?.LongestStreak ?? 0)</MudText>
+                        <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Longest Streak</MudText>
+                    </div>
+                    <div class="stat-icon-wrapper success-fade">
+                        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Success" />
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <div class="stat-card glass shadow-sm border-light">
+                    <div class="stat-content">
+                        <MudText Typo="Typo.h3" Class="fw-extra-bold tertiary-text">@(analytics?.MissedDays ?? 0)</MudText>
+                        <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Days Missed</MudText>
+                    </div>
+                    <div class="stat-icon-wrapper tertiary-fade">
+                        <MudIcon Icon="@Icons.Material.Filled.Nightlight" Color="Color.Tertiary" />
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid>
+            <!-- Recent Entries -->
+            <MudItem xs="12" lg="8">
+                <div class="d-flex align-center justify-space-between mb-4 px-2">
+                    <MudText Typo="Typo.h5" Class="fw-bold">Latest Entries</MudText>
+                    @* <MudButton OnClick='(() => Navigation.NavigateTo("/entries"))' Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Class="rounded-pill">Open Library</MudButton> *@
+                </div>
+
+                @if (recentEntries == null || !recentEntries.Any())
+                {
+                    <div class="empty-state-card mt-2">
+                        <div class="empty-state-icon">
+                            <MudIcon Icon="@Icons.Material.Filled.HistoryEdu" />
+                        </div>
+                        <MudText Typo="Typo.h5" Class="fw-bold mt-4">Nothing here yet</MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6 opacity-75">Begin with a short note to build your space.</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="rounded-pill px-6">Write first entry</MudButton>
+                    </div>
+                }
+                else
+                {
+                    <MudStack Spacing="3" Class="mt-2">
+                        @foreach (var entry in recentEntries)
+                        {
+                            <div class="premium-entry-card" @onclick="(() => HandleEntryClick(entry))">
+                                <div class="entry-mood-indicator @entry.PrimaryMoodCategory.ToString().ToLower()">
+                                    @GetMoodEmoji(entry.PrimaryMood)
+                                    @if (!string.IsNullOrEmpty(entry.Pin))
+                                    {
+                                        <div class="lock-overlay">
+                                            <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Color="Color.Warning" />
+                                        </div>
+                                    }
+                                </div>
+                                <div class="entry-details py-1">
+                                    <div class="d-flex align-center justify-space-between mb-1">
+                                        <MudText Typo="Typo.h6" Class="fw-bold text-truncate">@entry.Title</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-medium">@entry.EntryDate.ToString("MMM dd, yyyy")</MudText>
+                                    </div>
+                                    @if (string.IsNullOrEmpty(entry.Pin))
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-clamp opacity-75">@entry.Content</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Warning" Class="opacity-75 italic">Locked entry. Tap to unlock.</MudText>
+                                    }
+                                    <div class="d-flex align-center mt-3 gap-2">
+                                        @if (!string.IsNullOrEmpty(entry.Tags))
+                                        {
+                                            @foreach (var tag in entry.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).Take(3))
+                                            {
+                                                <span class="modern-tag">#@tag.Trim()</span>
+                                            }
+                                        }
+                                        <MudSpacer />
+                                        <MudIcon Icon="@(string.IsNullOrEmpty(entry.Pin) ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.LockOpen)" Size="Size.Small" Color="Color.Secondary" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </MudStack>
+                }
+            </MudItem>
+
+        </MudGrid>
+    }
+</MudContainer>
+
+<style>
+    .fw-extra-bold { font-weight: 900 !important; }
+    .fw-bold { font-weight: 700 !important; }
+    .uppercase-tracking { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; font-weight: 800; }
+    .opacity-75 { opacity: 0.75; }
+    .secondary-text { color: var(--mud-palette-text-secondary); }
+    .primary-text { color: var(--mud-palette-primary); }
+    .secondary-text-alt { color: var(--mud-palette-secondary); }
+    .tertiary-text { color: var(--mud-palette-tertiary); }
+    .success-text { color: #6BBF9E; }
+
+    .primary-gradient-text {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-card.glass {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--mud-palette-surface);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05);
+        height: 100%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .stat-card.glass:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1);
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.2);
+    }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .primary-fade { background: rgba(var(--mud-palette-primary-rgb), 0.1); }
+    .secondary-fade { background: rgba(var(--mud-palette-secondary-rgb), 0.1); }
+    .tertiary-fade { background: rgba(var(--mud-palette-tertiary-rgb), 0.1); }
+    .success-fade { background: rgba(16, 185, 129, 0.1); }
+
+    .premium-entry-card {
+        background: var(--mud-palette-surface);
+        padding: 1.25rem;
+        border-radius: 1.25rem;
+        display: flex;
+        gap: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05);
+    }
+    .premium-entry-card:hover {
+        transform: scale(1.01);
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.3);
+        box-shadow: 0 8px 16px -4px rgba(0,0,0,0.05);
+    }
+
+    .entry-mood-indicator {
+        position: relative;
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        background: rgba(var(--mud-palette-surface-rgb), 0.05);
+    }
+    .lock-overlay {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        background: #1E2633;
+        border: 2px solid #E9B86F;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .entry-mood-indicator.positive { background: rgba(16, 185, 129, 0.08); }
+    .entry-mood-indicator.neutral { background: rgba(59, 130, 246, 0.08); }
+    .entry-mood-indicator.negative { background: rgba(239, 68, 68, 0.08); }
+
+    .modern-tag {
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        color: var(--mud-palette-primary);
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .insight-card {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        background: var(--mud-palette-surface);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05);
+    }
+    .insight-card.info-gradient {
+        background: linear-gradient(135deg, rgba(var(--mud-palette-primary-rgb), 0.03) 0%, rgba(var(--mud-palette-secondary-rgb), 0.03) 100%);
+    }
+
+    .goal-progress-wrapper { position: relative; display: flex; justify-content: center; }
+    .goal-count {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @@keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .text-clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+@code {
+    private string GetMoodEmoji(string mood)
+    {
+        return mood?.ToLower() switch
+        {
+            "happy" or "positive" or "joyful" or "excited" or "thrilled" => "😊",
+            "neutral" or "calm" or "tired" or "okay" or "peaceful" => "😐",
+            "sad" or "negative" or "angry" or "stressed" or "frustrated" => "😔",
+            _ => "📝"
+        };
+    }
+}

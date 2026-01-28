@@ -1,0 +1,154 @@
+@page "/settings"
+@using JournalApp.Services
+@using JournalApp.Models
+
+<PageTitle>Preferences - Reflecta</PageTitle>
+
+<div class="animate-fade-in">
+    <MudText Typo="Typo.h3" Class="fw-extra-bold peace-text mb-2">Journal Settings</MudText>
+    <MudText Typo="Typo.h6" Class="secondary-text opacity-60 mb-10">Adjust your profile, appearance, and export options.</MudText>
+</div>
+
+<MudGrid>
+    <!-- Profile Settings -->
+    <MudItem xs="12" md="6">
+        <div class="glass pa-8 rounded-xxl mb-6">
+            <div class="d-flex align-center mb-6 gap-3">
+                <div class="icon-box primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                </div>
+                <MudText Typo="Typo.h6" Class="fw-bold primary-text">Profile Details</MudText>
+            </div>
+            <EditForm Model="@profileModel" OnValidSubmit="UpdateProfile">
+                <DataAnnotationsValidator />
+                <MudTextField @bind-Value="profileModel.Username" Label="Name" Variant="Variant.Outlined" Class="mb-4 rounded-lg" Placeholder="Your name" />
+                <MudTextField @bind-Value="profileModel.Email" Label="Email" Variant="Variant.Outlined" InputType="InputType.Email" Class="mb-6 rounded-lg" Placeholder="you@email.com" />
+                <div class="d-flex justify-end">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="rounded-pill px-8 py-3 shadow-primary glow-button">
+                        Save Profile
+                    </MudButton>
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="glass pa-8 rounded-xxl mb-6">
+            <div class="d-flex align-center mb-6 gap-3">
+                <div class="icon-box success">
+                    <MudIcon Icon="@Icons.Material.Filled.FileDownload" Size="Size.Small" />
+                </div>
+                <MudText Typo="Typo.h6" Class="fw-bold">Export Journal</MudText>
+            </div>
+            <MudText Typo="Typo.body2" Class="mb-6 opacity-60">Create a portable archive of your reflections.</MudText>
+            <MudGrid Class="mb-6">
+                <MudItem xs="6">
+                    <MudDatePicker @bind-Date="exportStartDate" Label="From" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudDatePicker @bind-Date="exportEndDate" Label="To" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+            </MudGrid>
+            <MudButton OnClick="ExportToPdf" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.PictureAsPdf" Class="rounded-pill px-8 py-3 shadow-success">
+                Create PDF Export
+            </MudButton>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <div class="glass pa-8 rounded-xxl">
+            <div class="d-flex align-center mb-6 gap-3">
+                <div class="icon-box secondary">
+                    <MudIcon Icon="@Icons.Material.Filled.Palette" Size="Size.Small" />
+                </div>
+                <MudText Typo="Typo.h6" Class="fw-bold">Appearance</MudText>
+            </div>
+            <MudText Typo="Typo.body2" Class="mb-4 opacity-60">Choose a look that fits your focus.</MudText>
+            <div class="theme-selector d-flex gap-4 mb-6">
+                <div class="theme-pill @(selectedTheme == "Light" ? "active" : "")" @onclick='() => selectedTheme = "Light"'>
+                    <MudIcon Icon="@Icons.Material.Filled.LightMode" Size="Size.Small" Class="mr-2" />
+                    <span> Day</span>
+                </div>
+                <div class="theme-pill @(selectedTheme == "Dark" ? "active" : "")" @onclick='() => selectedTheme = "Dark"'>
+                    <MudIcon Icon="@Icons.Material.Filled.DarkMode" Size="Size.Small" Class="mr-2" />
+                    <span> Night</span>
+                </div>
+            </div>
+        </div>
+    </MudItem>
+</MudGrid>
+
+<style>
+    .fw-extra-bold { font-weight: 900 !important; }
+    .fw-bold { font-weight: 700 !important; }
+    .opacity-60 { opacity: 0.6; }
+    
+    .peace-text {
+        color: var(--primary-color) !important;
+    }
+
+    .glass {
+        backdrop-filter: blur(10px);
+        background: rgba(var(--mud-palette-surface-rgb), 0.8) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05) !important;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+    }
+
+    .rounded-xxl { border-radius: 2rem; }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon-box.primary { background: rgba(var(--mud-palette-primary-rgb), 0.1); color: var(--mud-palette-primary); }
+    .icon-box.secondary { background: rgba(var(--mud-palette-secondary-rgb), 0.1); color: var(--mud-palette-secondary); }
+    .icon-box.tertiary { background: rgba(var(--mud-palette-tertiary-rgb), 0.1); color: var(--mud-palette-tertiary); }
+    .icon-box.success { background: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success); }
+    .icon-box.warning { background: rgba(var(--mud-palette-warning-rgb), 0.1); color: var(--mud-palette-warning); }
+
+    .theme-pill {
+        padding: 12px 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.1);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        flex: 1;
+        justify-content: center;
+        font-weight: 600;
+        color: var(--mud-palette-text-secondary);
+    }
+    .theme-pill:hover { background: rgba(var(--mud-palette-primary-rgb), 0.05); }
+    .theme-pill.active {
+        background: var(--mud-palette-primary);
+        color: white;
+        border-color: var(--mud-palette-primary);
+        box-shadow: 0 4px 12px -2px rgba(var(--mud-palette-primary-rgb), 0.3);
+    }
+
+    .pin-status { border: 1px solid transparent; }
+    .pin-status.active { background: rgba(var(--mud-palette-success-rgb), 0.05); border-color: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success); }
+    .pin-status.warning { background: rgba(var(--mud-palette-warning-rgb), 0.05); border-color: rgba(var(--mud-palette-warning-rgb), 0.1); color: var(--mud-palette-warning); }
+
+    .shadow-primary { box-shadow: 0 8px 16px -4px rgba(var(--mud-palette-primary-rgb), 0.4); }
+    .shadow-success { box-shadow: 0 8px 16px -4px rgba(var(--mud-palette-success-rgb), 0.4); }
+
+    .glow-button {
+        transition: all 0.3s ease;
+    }
+    .glow-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px -6px rgba(var(--mud-palette-primary-rgb), 0.5);
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    @@keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

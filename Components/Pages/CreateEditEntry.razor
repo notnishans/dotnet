@@ -1,0 +1,325 @@
+@page "/create-entry"
+@page "/edit-entry/{EntryId:int}"
+@page "/create-edit-entry"
+@page "/create-edit-entry/{EntryId:int}"
+
+@* [VIVA INFO]: This component uses 'Attribute Routing' to handle BOTH 
+   Creating and Editing in a single file (Code Reuse).
+*@
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+@inject NavigationManager Navigation
+@inject AuthenticationStateService AuthState
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>@(IsEditMode ? "Edit Reflection" : "New Reflection") - Reflecta</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-12 animate-fade-in">
+    <div class="editor-canvas glass rounded-xxl pa-8 pa-md-12">
+@* [VIVA INFO]: Uses a 'Dynamic Layout' that changes based on 'IsEditMode'. *@
+        <div class="d-flex align-center justify-space-between mb-10">
+            <div>
+                <MudText Typo="Typo.h3" Class="fw-extra-bold primary-gradient-text">@(IsEditMode ? "Polish your reflection" : "Write today’s reflection")</MudText>
+                <MudText Typo="Typo.h6" Class="secondary-text opacity-60">@(IsEditMode ? "Make careful edits and save when ready." : "A calm space for your thoughts.")</MudText>
+            </div>
+            <div class="d-flex gap-2">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Cancel" Class="rounded-pill px-6">Discard</MudButton>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleValidSubmit" Class="rounded-pill px-10 py-3 shadow-primary glow-button">
+                    @(IsEditMode ? "Save Updates" : "Save Journal")
+                </MudButton>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <MudAlert Severity="@(isSuccess ? Severity.Success : Severity.Error)" Variant="Variant.Filled" Class="mb-8 rounded-xl shadow-sm animate-slide-down" ShowCloseIcon="true" CloseIconClicked="@(() => message = string.Empty)">
+                @message
+            </MudAlert>
+        }
+
+        <EditForm Model="@entry">
+            <DataAnnotationsValidator />
+            
+            <MudGrid Spacing="6">
+                <MudItem xs="12" md="8">
+                    <div class="focused-writing-area">
+                        <div class="d-flex align-center justify-space-between mb-2">
+                            <input @bind="entry.Title" placeholder="Add a short title..." class="title-h1-input" style="flex: 1;" />
+                            <div class="d-flex align-center gap-2 ml-4">
+                                <MudCheckBox @bind-Value="isProtected" Label="Lock with PIN" Color="Color.Primary" Dense="true" T="bool" />
+                                @if (isProtected)
+                                {
+                                    <MudTextField @bind-Value="entry.Pin" Label="PIN" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Text" MaxLength="6" Style="width: 100px; background: rgba(255,255,255,0.05);" Placeholder="4–6" />
+                                }
+                            </div>
+                        </div>
+                        <MudDivider Class="mb-6 opacity-10" />
+                        
+                        <div class="toolbar-container mb-4">
+                            <MudToolBar Dense="true" Class="minimal-toolbar rounded-xl px-4">
+                                <MudIconButton Icon="@Icons.Material.Filled.FormatBold" OnClick='() => ApplyFormat("bold")' Size="Size.Small" />
+                                <MudIconButton Icon="@Icons.Material.Filled.FormatItalic" OnClick='() => ApplyFormat("italic")' Size="Size.Small" />
+                                <MudIconButton Icon="@Icons.Material.Filled.FormatUnderlined" OnClick='() => ApplyFormat("underline")' Size="Size.Small" />
+                                <MudDivider Vertical="true" FlexItem="true" Class="mx-2 my-2 opacity-10" />
+                                <MudIconButton Icon="@Icons.Material.Filled.FormatListBulleted" OnClick='() => ApplyFormat("bulletList")' Size="Size.Small" />
+                                <MudIconButton Icon="@Icons.Material.Filled.FormatListNumbered" OnClick='() => ApplyFormat("numberedList")' Size="Size.Small" />
+                                <MudDivider Vertical="true" FlexItem="true" Class="mx-2 my-2 opacity-10" />
+                                <MudIconButton Icon="@Icons.Material.Filled.InsertEmoticon" OnClick='() => ApplyFormat("emoji")' Size="Size.Small" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Link" OnClick='() => ApplyFormat("link")' Size="Size.Small" />
+                                <MudSpacer />
+                                <MudToggleIconButton @bind-Toggled="showPreview" Icon="@Icons.Material.Filled.Visibility" ToggledIcon="@Icons.Material.Filled.Edit" Size="Size.Small" Title="Preview" ToggledTitle="Edit" />
+                            </MudToolBar>
+                        </div>
+
+                        <div class="editor-wrapper glass-inner rounded-xl overflow-hidden shadow-inner">
+                            @if (showPreview)
+                            {
+                                <div class="markdown-preview-area pa-8 overflow-auto">
+                                    @((MarkupString)RenderMarkdown(entry.Content ?? ""))
+                                </div>
+                            }
+                            else
+                            {
+                                <textarea id="contentEditor" 
+                                          @bind="entry.Content" 
+                                          @oninput="@((e) => entry.Content = e.Value?.ToString() ?? "")"
+                                          placeholder="Write freely..."
+                                          class="zen-textarea pa-8" />
+                            }
+                            
+                            <div class="editor-footer d-flex align-center justify-space-between px-6 py-3 border-top-light">
+                                <div class="d-flex gap-4 opacity-60">
+                                    <MudText Typo="Typo.caption" Class="fw-bold tracking-wider">@CalculateWordCount(entry.Content ?? "") WORDS</MudText>
+                                    <MudText Typo="Typo.caption" Class="fw-bold tracking-wider">@CalculateReadingTime(entry.Content ?? "") MIN READ</MudText>
+                                </div>
+                                <div class="d-flex align-center gap-2">
+                                    @if (!string.IsNullOrEmpty(autoSaveStatus))
+                                    {
+                                        <MudText Typo="Typo.caption" Class="@autoSaveStatusClass">@autoSaveStatus</MudText>
+                                    }
+                                    <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" Title="Undo (Coming Soon)" Disabled="true" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudStack Spacing="6">
+                        <div class="sidebar-card glass-inner rounded-xl pa-6 border-light">
+                            <div class="d-flex align-center mb-4 gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.SentimentSatisfied" Color="Color.Primary" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="fw-bold uppercase-tracking">Primary mood</MudText>
+                            </div>
+                            <MudSelect T="string" @bind-Value="entry.PrimaryMood" Variant="Variant.Outlined" 
+                                       AnchorOrigin="Origin.BottomCenter" Class="rounded-lg bg-surface mb-6"
+                                       Required="true" ErrorText="Primary mood is required">
+                                @foreach (var mood in MoodDefinitions.GetAllMoods())
+                                {
+                                    <MudSelectItem Value="@mood">@mood</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <div class="d-flex align-center mb-4 gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.AddReaction" Color="Color.Secondary" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="fw-bold uppercase-tracking">Additional moods</MudText>
+                            </div>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="6">
+                                    <MudSelect T="string" @bind-Value="entry.SecondaryMood1" Label="Mood 2" Variant="Variant.Outlined" 
+                                               AnchorOrigin="Origin.BottomCenter" Class="rounded-lg bg-surface" Clearable="true">
+                                        @foreach (var mood in MoodDefinitions.GetAllMoods())
+                                        {
+                                            <MudSelectItem Value="@mood">@mood</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudSelect T="string" @bind-Value="entry.SecondaryMood2" Label="Mood 3" Variant="Variant.Outlined" 
+                                               AnchorOrigin="Origin.BottomCenter" Class="rounded-lg bg-surface" Clearable="true">
+                                        @foreach (var mood in MoodDefinitions.GetAllMoods())
+                                        {
+                                            <MudSelectItem Value="@mood">@mood</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </div>
+
+                        <div class="sidebar-card glass-inner rounded-xl pa-6 border-light">
+                            <div class="d-flex align-center mb-4 gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Event" Color="Color.Primary" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="fw-bold uppercase-tracking">Entry date</MudText>
+                            </div>
+                            <MudDatePicker @bind-Date="entry._entryDate" Variant="Variant.Outlined" Class="rounded-lg bg-surface" Disabled="!IsEditMode" ReadOnly="!IsEditMode" />
+                            @if (!IsEditMode)
+                            {
+                                <MudText Typo="Typo.caption" Class="mt-2 d-block opacity-60">New entries default to today.</MudText>
+                            }
+                        </div>
+
+                        <div class="sidebar-card glass-inner rounded-xl pa-6 border-light">
+                            <div class="d-flex align-center mb-4 gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Tag" Color="Color.Primary" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="fw-bold uppercase-tracking">Themes</MudText>
+                            </div>
+                            <div class="tag-field mb-4">
+                                <MudTextField T="string" Placeholder="Add a theme..." 
+                                               Variant="Variant.Text" Immediate="true" 
+                                               @onkeyup="HandleTagKeyUp" @bind-Value="newTag" 
+                                               Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Add" />
+                            </div>
+                            <div class="tag-chips d-flex flex-wrap gap-2 mb-4">
+                                @if (!string.IsNullOrEmpty(entry.Tags))
+                                {
+                                    @foreach (var tag in entry.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                                    {
+                                        <MudChip T="string" Color="Color.Primary" OnClose="() => RemoveTag(tag)" Size="Size.Small" Class="rounded-lg">@tag</MudChip>
+                                    }
+                                }
+                            </div>
+                            <MudDivider Class="my-4 opacity-5" />
+                            <MudText Typo="Typo.caption" Class="mb-2 d-block opacity-60">Quick picks:</MudText>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var tag in TagDefinitions.GetAllPreBuiltTags().Take(8))
+                                {
+                                    <button type="button" class="tag-pill @(entry.Tags?.Contains(tag) == true ? "active" : "")" 
+                                            @onclick="() => AddTag(tag)">
+                                        @tag
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        @if (IsEditMode)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteOutline" 
+                                       OnClick="ConfirmDelete" FullWidth="true" Class="mt-4 opacity-60 hover-opacity-100">
+                                Delete Entry
+                            </MudButton>
+                        }
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </div>
+</MudContainer>
+
+<style>
+    .fw-extra-bold { font-weight: 900 !important; }
+    .fw-bold { font-weight: 700 !important; }
+    .tracking-wider { letter-spacing: 0.1em; }
+    .uppercase-tracking { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; font-weight: 800; }
+    .opacity-60 { opacity: 0.6; }
+    .primary-text { color: var(--mud-palette-primary); }
+    .secondary-text { color: var(--mud-palette-text-secondary); }
+
+    .primary-gradient-text {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .glass {
+        backdrop-filter: blur(10px);
+        background: rgba(var(--mud-palette-surface-rgb), 0.8) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05) !important;
+    }
+    .glass-inner {
+        background: rgba(var(--mud-palette-surface-rgb), 0.5) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05) !important;
+    }
+
+    .rounded-xxl { border-radius: 2rem; }
+
+    .title-h1-input {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--mud-palette-text-primary);
+        width: 100%;
+        letter-spacing: -0.02em;
+    }
+    .title-h1-input::placeholder { color: var(--mud-palette-text-secondary); opacity: 0.3; }
+
+    .minimal-toolbar {
+        background: rgba(var(--mud-palette-surface-rgb), 0.5) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05);
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .zen-textarea {
+        width: 100%;
+        min-height: 500px;
+        background: rgba(var(--mud-palette-surface-rgb), 0.55);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.08);
+        outline: none;
+        font-size: 1.15rem;
+        line-height: 1.75;
+        color: var(--mud-palette-text-primary);
+        caret-color: var(--mud-palette-primary);
+        font-family: 'Georgia', serif;
+        resize: vertical;
+        border-radius: 16px;
+    }
+    .zen-textarea::placeholder { color: rgba(var(--mud-palette-text-secondary-rgb), 0.55); }
+
+    .markdown-preview-area {
+        min-height: 500px;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        line-height: 1.75;
+        color: var(--mud-palette-text-primary);
+    }
+
+    .border-top-light { border-top: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05); }
+
+    .tag-pill {
+        background: rgba(var(--mud-palette-surface-rgb), 0.2);
+        color: var(--mud-palette-text-secondary);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.1);
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .tag-pill:hover { background: rgba(var(--mud-palette-primary-rgb), 0.05); color: var(--mud-palette-primary); }
+    .tag-pill.active { background: var(--mud-palette-primary); color: white; border-color: var(--mud-palette-primary); }
+
+    .shadow-primary { box-shadow: 0 10px 15px -3px rgba(var(--mud-palette-primary-rgb), 0.3); }
+    
+    .animate-fade-in {
+        animation: fade-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    @@keyframes fade-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+@code {
+    private DialogOptions _emojiDialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
+    
+    private async Task ConfirmDelete()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", "Are you sure you want to delete this entry? This action cannot be undone.");
+        parameters.Add("ButtonText", "Delete");
+        parameters.Add("Color", Color.Error);
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Delete Entry", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await DeleteEntry();
+        }
+    }
+}

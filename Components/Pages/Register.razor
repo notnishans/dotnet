@@ -1,0 +1,81 @@
+@page "/register"
+@using JournalApp.Models
+@using JournalApp.Services
+
+<PageTitle>Create Account - Reflecta</PageTitle>
+
+<div class="login-wrapper">
+    <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
+        <MudCard Elevation="8" Class="rounded-lg login-card-premium overflow-hidden">
+            <div class="login-banner">
+                <MudIcon Icon="@Icons.Material.Filled.AppRegistration" Size="Size.Large" Color="Color.Inherit" Class="mb-2" />
+                <MudText Typo="Typo.h5" Color="Color.Inherit"><b>Create your Reflecta space</b></MudText>
+            </div>
+            
+            <MudCardContent Class="pa-8">
+                <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true"><b>Set up your journal</b></MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-8">A calm, private space for your reflections.</MudText>
+                
+                <EditForm Model="registerModel" OnValidSubmit="HandleRegister">
+                    <DataAnnotationsValidator />
+                    
+                    <MudTextField @bind-Value="registerModel.Username" Label="Account name" Variant="Variant.Outlined" 
+                                  FullWidth="true" Class="mb-4" Adornment="Adornment.Start" 
+                                  AdornmentIcon="@Icons.Material.Filled.Person" />
+
+                    <MudTextField @bind-Value="registerModel.Email" Label="Email address" Variant="Variant.Outlined" 
+                                  InputType="InputType.Email" FullWidth="true" Class="mb-4" 
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
+                                  
+                    <MudTextField @bind-Value="registerModel.Password" Label="Create a password" Variant="Variant.Outlined" 
+                                  InputType="InputType.Password" FullWidth="true" Class="mb-4" 
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" 
+                                  HelperText="At least 6 characters" />
+
+                    <MudTextField @bind-Value="registerModel.ConfirmPassword" Label="Confirm password" Variant="Variant.Outlined" 
+                                  InputType="InputType.Password" FullWidth="true" Class="mb-6" 
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+                    
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" 
+                               FullWidth="true" Size="Size.Large" Disabled="@isLoading" Class="rounded-pill py-3">
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Creating your space...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Create Journal</MudText>
+                        }
+                    </MudButton>
+                </EditForm>
+                
+                <div class="mt-8 text-center">
+                    <MudText Typo="Typo.body2">Already set up? <MudLink Href="/login" Underline="Underline.Always"><b>Sign in</b></MudLink></MudText>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudContainer>
+</div>
+
+<style>
+    .login-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-card-premium {
+        max-width: 500px;
+    }
+    .login-banner {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        color: white;
+        padding: 40px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

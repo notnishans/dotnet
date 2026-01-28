@@ -1,0 +1,55 @@
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column align-center pa-4">
+            <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Warning" Size="Size.Large" Class="mb-4" />
+            <MudText Typo="Typo.h6" Class="fw-bold mb-2">Unlock Entry</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="opacity-70 mb-6">This entry is locked. Enter the PIN to continue.</MudText>
+            
+            <MudTextField @bind-Value="inputPin" Label="Entry PIN" Variant="Variant.Outlined" 
+                          InputType="InputType.Password" MaxLength="6" FullWidth="true" 
+                          AutoFocus="true" Class="mb-4" OnKeyUp="HandleKeyUp" />
+            
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <MudText Color="Color.Error" Typo="Typo.caption">@error</MudText>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text" Class="px-6">Back</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Verify" Class="px-8 rounded-pill">Unlock Entry</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string TargetPin { get; set; } = string.Empty;
+
+    private string inputPin = "";
+    private string error = "";
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Verify()
+    {
+        if (inputPin == TargetPin)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            error = "PIN didn’t match. Try again.";
+            inputPin = "";
+        }
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Verify();
+        }
+    }
+}

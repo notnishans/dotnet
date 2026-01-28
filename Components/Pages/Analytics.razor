@@ -1,0 +1,330 @@
+@page "/analytics"
+@using JournalApp.Services
+@using JournalApp.Data
+
+@* [VIVA INFO]: This page demonstrates 'Data Visualization'. 
+   It fetches aggregated data from the AnalyticsService and displays it using MudBlazor components.
+*@
+<PageTitle>Insights Studio - Reflecta</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-12">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-6 rounded-lg shadow-sm" ShowCloseIcon="true" CloseIconClicked="(() => errorMessage = string.Empty)">
+            @errorMessage
+        </MudAlert>
+    }
+
+    <div class="d-flex align-center justify-space-between mb-8 animate-fade-in">
+        <div>
+            <MudText Typo="Typo.h3" Class="fw-bold peace-text">Insights Studio</MudText>
+            <MudText Typo="Typo.h6" Class="secondary-text mt-1 opacity-75">A clear view of your habits and moods.</MudText>
+        </div>
+        <div class="d-flex gap-2">
+            <MudDateRangePicker @bind-DateRange="_dateRange" Label="Date range" Variant="Variant.Outlined" 
+                                Class="glass rounded-pill px-4" MaxDate="@DateTime.Today" Editable="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh" OnClick="UpdateAnalytics" Class="rounded-pill px-6 shadow-primary">Refresh Insights</MudButton>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height: 50vh;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (analytics != null)
+    {
+        <!-- Key Metrics Cards -->
+        <MudGrid Class="mb-8 animate-fade-in-up" Style="animation-delay: 0.1s;">
+            <MudItem xs="12" sm="6" md="3">
+                <div class="metric-card vibrant-gradient-blue shadow-lg">
+                    <div class="metric-content">
+                        <MudText Typo="Typo.h3" Class="fw-bold">@analytics.TotalEntries</MudText>
+                        <MudText Typo="Typo.subtitle2" Class="opacity-75 uppercase-tracking">Total Entries</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Class="metric-icon" />
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <div class="metric-card vibrant-gradient-coral shadow-lg">
+                    <div class="metric-content">
+                        <MudText Typo="Typo.h3" Class="fw-bold">@analytics.CurrentStreak</MudText>
+                        <MudText Typo="Typo.subtitle2" Class="opacity-75 uppercase-tracking">Current Streak</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Class="metric-icon" />
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <div class="metric-card vibrant-gradient-success shadow-lg">
+                    <div class="metric-content">
+                        <MudText Typo="Typo.h3" Class="fw-bold">@analytics.LongestStreak</MudText>
+                        <MudText Typo="Typo.subtitle2" Class="opacity-75 uppercase-tracking">Best Streak</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Class="metric-icon" />
+                </div>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <div class="metric-card vibrant-card shadow-lg bg-surface">
+                    <div class="metric-content">
+                        <MudText Typo="Typo.h3" Class="fw-bold peace-text">@((int)analytics.AverageWordCount)</MudText>
+                        <MudText Typo="Typo.subtitle2" Class="opacity-75 uppercase-tracking secondary-text">Avg. Words</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="metric-icon peace-text op-20" />
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Spacing="4">
+            <!-- Mood Harmony -->
+            <MudItem xs="12" md="7">
+                <div class="glass pa-8 rounded-xxl shadow-xl h-100">
+                    <div class="d-flex align-center justify-space-between mb-8">
+                        <div>
+                            <MudText Typo="Typo.h5" Class="fw-bold">Mood Balance</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="opacity-75">How your moods distribute across entries.</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Color="Color.Primary" />
+                    </div>
+
+                    <MudStack Spacing="6">
+                        <div class="mood-stat-group">
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <div class="d-flex align-center gap-2">
+                                    <span class="mood-emoji">😊</span>
+                                    <MudText Typo="Typo.h6" Class="fw-bold">Positive</MudText>
+                                </div>
+                                <MudText Typo="Typo.h6" Color="Color.Success">@analytics.PositiveMoodPercentage%</MudText>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="@analytics.PositiveMoodPercentage" Size="Size.Large" Class="rounded-pill shadow-inner" style="height: 12px;" />
+                        </div>
+
+                        <div class="mood-stat-group">
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <div class="d-flex align-center gap-2">
+                                    <span class="mood-emoji">😐</span>
+                                    <MudText Typo="Typo.h6" Class="fw-bold">Neutral</MudText>
+                                </div>
+                                <MudText Typo="Typo.h6" Color="Color.Info">@analytics.NeutralMoodPercentage%</MudText>
+                            </div>
+                            <MudProgressLinear Color="Color.Info" Value="@analytics.NeutralMoodPercentage" Size="Size.Large" Class="rounded-pill shadow-inner" style="height: 12px;" />
+                        </div>
+
+                        <div class="mood-stat-group">
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <div class="d-flex align-center gap-2">
+                                    <span class="mood-emoji">😔</span>
+                                    <MudText Typo="Typo.h6" Class="fw-bold">Negative</MudText>
+                                </div>
+                                <MudText Typo="Typo.h6" Color="Color.Error">@analytics.NegativeMoodPercentage%</MudText>
+                            </div>
+                            <MudProgressLinear Color="Color.Error" Value="@analytics.NegativeMoodPercentage" Size="Size.Large" Class="rounded-pill shadow-inner" style="height: 12px;" />
+                        </div>
+                    </MudStack>
+                </div>
+            </MudItem>
+
+            <!-- Word Count Trends -->
+            <MudItem xs="12">
+                <div class="glass pa-8 rounded-xxl shadow-xl">
+                    <div class="d-flex align-center justify-space-between mb-8">
+                        <div>
+                            <MudText Typo="Typo.h5" Class="fw-bold">Writing Volume</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="opacity-75">How much you write over time.</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Timeline" Color="Color.Primary" />
+                    </div>
+                    
+                    @if (analytics.DailyWordCounts != null && analytics.DailyWordCounts.Any())
+                    {
+                        <div class="word-trend-list">
+                            @foreach (var daily in analytics.DailyWordCounts.OrderByDescending(d => d.Key).Take(7))
+                            {
+                                <div class="trend-item d-flex align-center justify-space-between pa-4 mb-2 rounded-xl glass-inner">
+                                    <MudText Typo="Typo.body1" Class="fw-bold">@daily.Key.ToString("MMM dd, yyyy")</MudText>
+                                    <div class="d-flex align-center gap-4">
+                                        <MudText Typo="Typo.body2" Class="opacity-75">@daily.Value words</MudText>
+                                        <MudProgressLinear Color="Color.Primary" Value="@(Math.Min(100, (daily.Value / 500.0) * 100))" Size="Size.Small" Class="rounded-pill" style="width: 100px;" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Class="opacity-50 text-center py-8">No writing data for this range.</MudText>
+                    }
+                </div>
+            </MudItem>
+
+            <!-- Tag Constellation -->
+            <MudItem xs="12">
+                <div class="glass pa-8 rounded-xxl shadow-xl">
+                    <div class="d-flex align-center justify-space-between mb-8">
+                        <div>
+                            <MudText Typo="Typo.h5" Class="fw-bold">Themes Map</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="opacity-75">Most frequent themes across your entries.</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Tag" Color="Color.Primary" />
+                    </div>
+
+                    @if (analytics.TagUsageCount.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-3">
+                            @foreach (var tag in analytics.TagUsageCount.Take(20))
+                            {
+                                var percentage = analytics.TagPercentages.ContainsKey(tag.Key) ? analytics.TagPercentages[tag.Key] : 0;
+                                <MudTooltip Text="@($"{tag.Value} mentions • {percentage}% of total tags")">
+                                    <div class="modern-chip-premium @(tag.Value > 10 ? "major" : (tag.Value > 5 ? "medium" : "minor"))">
+                                        <span class="tag-label">#@tag.Key</span>
+                                        <span class="tag-count">@tag.Value</span>
+                                    </div>
+                                </MudTooltip>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="py-12 text-center opacity-50">
+                            <MudIcon Icon="@Icons.Material.Filled.LocalOffer" Size="Size.Large" Class="mb-4" />
+                            <MudText Typo="Typo.body1">No themes yet. Add tags to reveal patterns.</MudText>
+                        </div>
+                    }
+                </div>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+<style>
+    .fw-bold { font-weight: 800 !important; }
+    .opacity-75 { opacity: 0.75; }
+    .uppercase-tracking { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; }
+    
+    .primary-gradient-text {
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .metric-card {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        min-height: 140px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .metric-card:hover { 
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+
+    .peace-card { background: linear-gradient(135deg, #6BBF9E 0%, #94D6D2 100%); }
+    .serenity-card { background: linear-gradient(135deg, #6B7FD1 0%, #8CA9E8 100%); }
+    .success-fade-card { background: linear-gradient(135deg, #86C5C2 0%, #6BBF9E 100%); }
+    .info-fade-card { background: linear-gradient(135deg, #F2C1A3 0%, #E9B86F 100%); }
+
+    .metric-content { position: relative; z-index: 2; }
+    
+    .metric-icon {
+        position: absolute;
+        bottom: -10px;
+        right: -10px;
+        font-size: 100px !important;
+        opacity: 0.15;
+        transform: rotate(-10deg);
+        z-index: 1;
+    }
+
+    .streak-fire {
+        font-size: 2rem;
+        filter: drop-shadow(0 0 8px rgba(255,165,0,0.5));
+        animation: pulse 2s infinite;
+    }
+
+    .mood-emoji { font-size: 1.5rem; }
+    .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.06); }
+
+    .insight-row {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        border-radius: 1.25rem;
+        background: rgba(var(--mud-palette-surface-rgb), 0.05);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.1);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .insight-row:hover { 
+        background: rgba(var(--mud-palette-surface-rgb), 0.1); 
+        border-color: var(--mud-palette-primary);
+        transform: translateX(5px);
+    }
+    .insight-row .mud-icon-root { font-size: 24px !important; color: #6B7C93; }
+    .insight-row.primary .mud-icon-root { color: #6B7FD1; }
+    .insight-row.secondary .mud-icon-root { color: #86C5C2; }
+    .insight-row.info .mud-icon-root { color: #8CA9E8; }
+    .insight-row.warning .mud-icon-root { color: #E9B86F; }
+
+    .modern-chip-premium {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        background: rgba(var(--mud-palette-surface-rgb), 0.05);
+        color: var(--mud-palette-text-primary);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .modern-chip-premium:hover { 
+        transform: scale(1.1); 
+        background: var(--mud-palette-primary); 
+        color: white;
+        border-color: transparent;
+    }
+    .modern-chip-premium.major { 
+        background: rgba(107, 127, 209, 0.12); 
+        color: #6B7FD1; 
+        border: 1px solid rgba(107, 127, 209, 0.3); 
+    }
+    .tag-count { font-size: 0.75rem; opacity: 0.7; background: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 8px; }
+
+    .glass {
+        backdrop-filter: blur(10px);
+        background: rgba(var(--mud-palette-surface-rgb), 0.8) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05) !important;
+    }
+
+    .glass-inner {
+        background: rgba(var(--mud-palette-surface-rgb), 0.5) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05) !important;
+    }
+
+    .rounded-xxl { border-radius: 2rem; }
+    .shadow-primary { box-shadow: 0 10px 15px -3px rgba(var(--mud-palette-primary-rgb), 0.3); }
+
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @@keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fade-in-up 0.6s ease-out forwards; }
+    .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+</style>
+

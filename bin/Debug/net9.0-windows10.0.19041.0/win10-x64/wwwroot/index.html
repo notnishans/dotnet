@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Journal App</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+
+<body>
+
+    <div id="app">
+        <div style="position:absolute; top:30%; width:100%; text-align:center">
+            <h1>Loading Journal App...</h1>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    
+    <script>
+        // Theme Management
+        window.themeManager = {
+            applyTheme: function(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('app-theme', theme);
+                return true;
+            },
+            
+            loadTheme: function() {
+                const savedTheme = localStorage.getItem('app-theme') || 'Light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                return savedTheme;
+            }
+        };
+        
+        // Load theme immediately on page load
+        window.themeManager.loadTheme();
+        
+        window.textEditorHelper = {
+            getSelection: function() {
+                const textarea = document.getElementById('contentEditor');
+                if (textarea) {
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const selectedText = textarea.value.substring(start, end);
+                    return {
+                        text: selectedText,
+                        start: start,
+                        end: end,
+                        hasSelection: start !== end
+                    };
+                }
+                return { text: '', start: 0, end: 0, hasSelection: false };
+            },
+
+            replaceSelection: function(text) {
+                const textarea = document.getElementById('contentEditor');
+                if (textarea) {
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const before = textarea.value.substring(0, start);
+                    const after = textarea.value.substring(end);
+                    textarea.value = before + text + after;
+                    
+                    // Trigger input event to update Blazor binding
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    // Set cursor position after inserted text
+                    const newPos = start + text.length;
+                    textarea.setSelectionRange(newPos, newPos);
+                    textarea.focus();
+                    
+                    return true;
+                }
+                return false;
+            },
+
+            insertAtCursor: function(textBefore, textAfter) {
+                const textarea = document.getElementById('contentEditor');
+                if (textarea) {
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const selectedText = textarea.value.substring(start, end);
+                    const before = textarea.value.substring(0, start);
+                    const after = textarea.value.substring(end);
+                    
+                    const newText = textBefore + selectedText + textAfter;
+                    textarea.value = before + newText + after;
+                    
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    // Position cursor between textBefore and textAfter if no selection
+                    if (start === end) {
+                        const newPos = start + textBefore.length;
+                        textarea.setSelectionRange(newPos, newPos);
+                    } else {
+                        const newPos = start + newText.length;
+                        textarea.setSelectionRange(newPos, newPos);
+                    }
+                    textarea.focus();
+                    
+                    return true;
+                }
+                return false;
+            },
+
+            wrapSelection: function(wrapper) {
+                return this.insertAtCursor(wrapper, wrapper);
+            },
+
+            insertLine: function(prefix) {
+                const textarea = document.getElementById('contentEditor');
+                if (textarea) {
+                    const start = textarea.selectionStart;
+                    const value = textarea.value;
+                    
+                    // Find start of current line
+                    let lineStart = start;
+                    while (lineStart > 0 && value[lineStart - 1] !== '\n') {
+                        lineStart--;
+                    }
+                    
+                    const before = value.substring(0, lineStart);
+                    const after = value.substring(lineStart);
+                    
+                    textarea.value = before + prefix + after;
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    const newPos = lineStart + prefix.length;
+                    textarea.setSelectionRange(newPos, newPos);
+                    textarea.focus();
+                    
+                    return true;
+                }
+                return false;
+            }
+        };
+        
+        // Backward compatibility
+        window.getSelection = function() {
+            const result = window.textEditorHelper.getSelection();
+            return result.text;
+        };
+        
+        window.replaceSelection = window.textEditorHelper.replaceSelection;
+    </script>
+
+</body>
+
+</html>

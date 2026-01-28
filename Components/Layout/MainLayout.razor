@@ -1,0 +1,197 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject AuthenticationStateService AuthState
+@inject NavigationManager Navigation
+@inject SettingsService SettingsService
+@inject IJSRuntime JSRuntime
+
+@* [VIVA INFO]: MainLayout is the 'Shell' of the application. 
+   It contains the Sidebar, Header, and Theme configuration that persist across all pages.
+*@
+
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Class="glass-appbar px-4 py-2">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" Class="hover-rotate" />
+        <MudText Typo="Typo.h5" Class="title-gradient fw-extra-bold ml-2">Reflecta</MudText>
+        <MudSpacer />
+        @if (AuthState.IsAuthenticated)
+        {
+            <div class="user-pill d-flex align-center px-4 py-1 rounded-pill">
+                <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-3 shadow-sm">
+                    @AuthState.GetCurrentUsername()?[0].ToString().ToUpper()
+                </MudAvatar>
+                <MudText Typo="Typo.body2" Class="fw-bold opacity-90">@AuthState.GetCurrentUsername()</MudText>
+            </div>
+        }
+    </MudAppBar>
+    
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" ClipMode="DrawerClipMode.Always" Class="premium-drawer">
+        <MudDrawerHeader Class="pa-6">
+            <div class="d-flex align-center gap-3">
+                <div class="logo-circle">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoStories" Color="Color.Primary" Size="Size.Medium" />
+                </div>
+                <MudText Typo="Typo.h6" Class="fw-extra-bold primary-text">Reflecta</MudText>
+            </div>
+        </MudDrawerHeader>
+        <div class="nav-container px-4">
+            <NavMenu />
+        </div>
+    </MudDrawer>
+
+    <MudMainContent Class="main-content-fade">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-8 px-6 animate-fade-in">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+<style>
+    .glass-appbar {
+        backdrop-filter: blur(12px);
+        background: @(_isDarkMode ? "rgba(12, 18, 24, 0.84)" : "rgba(253, 251, 248, 0.88)") !important;
+        border-bottom: 1px solid @(_isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)");
+        color: @(_isDarkMode ? "#F5F0E9" : "#2A2F33") !important;
+        position: sticky !important;
+    }
+
+    .title-gradient, .primary-gradient-text {
+        background: linear-gradient(135deg, #CDA1FF 0%, #7CC8B6 50%, #F4B49A 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.04em;
+        filter: drop-shadow(0 0 1px rgba(255,255,255,0.1));
+    }
+
+    .peace-text { color: #9C86E5 !important; }
+
+    .fw-extra-bold { font-weight: 900 !important; }
+    .fw-bold { font-weight: 700 !important; }
+
+    .user-pill {
+        background: rgba(156, 134, 229, 0.12);
+        border: 1px solid rgba(156, 134, 229, 0.2);
+    }
+
+    .premium-drawer {
+        background: @(_isDarkMode ? "#121A22" : "#FEFCF9") !important;
+        border-right: 1px solid @(_isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)") !important;
+    }
+
+    .logo-circle {
+        width: 36px;
+        height: 36px;
+        background: rgba(156, 134, 229, 0.12);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px -2px rgba(156, 134, 229, 0.3);
+    }
+
+    .hover-rotate:hover { transform: rotate(90deg); }
+    .animate-fade-in {
+        animation: fade-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @@keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .primary-text {
+        color: @(_isDarkMode ? "#D6C7FF" : "#9C86E5") !important;
+    }
+
+    .secondary-text { color: var(--mud-palette-text-secondary) !important; }
+    
+    .glass {
+        background: @(_isDarkMode ? "rgba(18, 24, 43, 0.7)" : "rgba(255, 255, 255, 0.8)") !important;
+        backdrop-filter: blur(16px) saturate(180%);
+        border: 1px solid @(_isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)") !important;
+        box-shadow: 0 8px 32px rgba(0,0,0, @(_isDarkMode ? "0.4" : "0.05"));
+        border-radius: 24px;
+    }
+
+    .shadow-primary { box-shadow: 0 8px 24px -4px rgba(156, 134, 229, 0.35) !important; }
+    
+    .glow-button {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    }
+    .glow-button:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 12px 28px -6px rgba(77, 150, 255, 0.5) !important;
+    }
+
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: scale(1.05); }
+</style>
+
+@code {
+    bool _drawerOpen = true;
+    private bool _isDarkMode = true;
+    private MudThemeProvider _mudThemeProvider = null!;
+    
+    private MudTheme _theme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#9C86E5",
+            Secondary = "#7CC8B6",
+            Tertiary = "#F4B49A",
+            Background = "#FDFBF7",
+            Surface = "#FFFFFF",
+            AppbarBackground = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
+            DrawerText = "#2A2F33",
+            TextPrimary = "#2A2F33",
+            TextSecondary = "#6F7C86",
+            ActionDefault = "#5E6A75",
+            Divider = "rgba(0,0,0, 0.08)"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#D6C7FF",
+            Secondary = "#93D7C4",
+            Tertiary = "#F6C3AE",
+            Surface = "#141D25",
+            Background = "#0F151C",
+            DrawerBackground = "#111A22",
+            AppbarBackground = "rgba(15, 21, 28, 0.82)",
+            ActionDefault = "#A0ACB8",
+            ActionDisabled = "rgba(160, 172, 184, 0.3)",
+            TextPrimary = "#F5F0E9",
+            TextSecondary = "#D2D7DD",
+            Divider = "rgba(255, 255, 255, 0.08)",
+            TableLines = "rgba(255, 255, 255, 0.05)"
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var settings = await SettingsService.GetSettingsAsync();
+        _isDarkMode = settings.Theme == "Dark";
+        SettingsService.ThemeChanged += HandleThemeChanged;
+    }
+
+    private void HandleThemeChanged(string theme)
+    {
+        _isDarkMode = theme == "Dark";
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SettingsService.ThemeChanged -= HandleThemeChanged;
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}

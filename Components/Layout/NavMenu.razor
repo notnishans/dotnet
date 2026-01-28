@@ -1,0 +1,82 @@
+@using JournalApp.Services
+@inject AuthenticationStateService AuthState
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="nav-container pa-4">
+    <MudNavMenu Label="Workspace" Color="Color.Primary" Bordered="false" Rounded="true">
+        <div class="user-profile-nav pa-4 mb-4 rounded-xl d-flex align-center gap-3">
+            <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">@AuthState.GetCurrentUsername()?.Substring(0, 1).ToUpper()</MudAvatar>
+            <div class="user-info">
+                <MudText Typo="Typo.subtitle2" Class="fw-bold peace-text">@AuthState.GetCurrentUsername()</MudText>
+                <MudText Typo="Typo.caption" Class="secondary-text opacity-75">Private space</MudText>
+            </div>
+        </div>
+
+        <MudText Typo="Typo.caption" Class="nav-group-header px-4 mb-2">WORKSPACE</MudText>
+        <MudNavLink href="dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SpaceDashboard" Class="nav-link-premium">Overview</MudNavLink>
+        <MudNavLink href="entries" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" Class="nav-link-premium">Journal Library</MudNavLink>
+        <MudNavLink href="calendar" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Event" Class="nav-link-premium">Memory Calendar</MudNavLink>
+        
+        <MudText Typo="Typo.caption" Class="nav-group-header px-4 mt-6 mb-2">INSIGHTS</MudText>
+        <MudNavLink href="analytics" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueryStats" Class="nav-link-premium">Insights Studio</MudNavLink>
+        
+        <MudText Typo="Typo.caption" Class="nav-group-header px-4 mt-6 mb-2">PREFERENCES</MudText>
+        <MudNavLink href="settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Tune" Class="nav-link-premium">Preferences</MudNavLink>
+    </MudNavMenu>
+</div>
+
+<style>
+    .nav-container { height: 100%; }
+    .fw-bold { font-weight: 700 !important; }
+    .opacity-75 { opacity: 0.75; }
+
+    .user-profile-nav {
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        border: 1px solid rgba(var(--mud-palette-primary-rgb), 0.08);
+    }
+    .user-info { overflow: hidden; }
+
+    .nav-group-header {
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.65rem !important;
+        opacity: 0.5;
+    }
+
+    .nav-link-premium {
+        border-radius: 12px !important;
+        margin: 4px 12px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        font-weight: 600 !important;
+        color: var(--mud-palette-text-secondary) !important;
+    }
+    .nav-link-premium:hover {
+        background: rgba(var(--mud-palette-primary-rgb), 0.08) !important;
+        color: var(--mud-palette-primary) !important;
+        transform: translateX(6px);
+    }
+    .nav-link-premium.active {
+        background: var(--mud-palette-primary) !important;
+        color: white !important;
+        box-shadow: 0 8px 16px -4px rgba(var(--mud-palette-primary-rgb), 0.25);
+    }
+    .nav-link-premium .mud-nav-link-icon-default {
+        transition: transform 0.3s ease;
+    }
+    .nav-link-premium:hover .mud-nav-link-icon-default {
+        transform: scale(1.1);
+    }
+
+    .nav-link-premium.logout:hover {
+        background: rgba(var(--mud-palette-error-rgb), 0.08) !important;
+        color: var(--mud-palette-error) !important;
+    }
+</style>
+
+@code {
+    protected override void OnInitialized()
+    {
+    }
+}

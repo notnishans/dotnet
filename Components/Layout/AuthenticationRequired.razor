@@ -1,0 +1,115 @@
+@using JournalApp.Services
+@inject AuthenticationStateService AuthState
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@if (AuthState.IsAuthenticated)
+{
+    @ChildContent
+}
+else
+{
+    <div class="auth-required">
+        <div class="auth-message">
+            <h3>Authentication Required</h3>
+            <p>Please sign in to access your journal.</p>
+            <div class="auth-actions">
+                <a href="/login" class="btn btn-primary">Sign In</a>
+                <a href="/register" class="btn btn-secondary">Create Account</a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        AuthState.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        
+        // Check if user should be redirected
+        if (!AuthState.IsAuthenticated)
+        {
+            var currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+            if (currentUrl != "login" && currentUrl != "register" && !string.IsNullOrEmpty(currentUrl))
+            {
+                Navigation.NavigateTo("/login");
+            }
+        }
+    }
+
+    private void OnAuthenticationStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AuthState.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}
+
+<style>
+    .auth-required {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 40px 20px;
+    }
+
+    .auth-message {
+        text-align: center;
+        max-width: 400px;
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .auth-message h3 {
+        color: #2F3A45;
+        margin-bottom: 15px;
+    }
+
+    .auth-message p {
+        color: #6B7C93;
+        margin-bottom: 30px;
+    }
+
+    .auth-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .auth-actions .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: transform 0.2s;
+    }
+
+    .auth-actions .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .auth-actions .btn-primary {
+        background: linear-gradient(135deg, #6B7FD1 0%, #86C5C2 100%);
+        color: white;
+        border: none;
+    }
+
+    .auth-actions .btn-secondary {
+        background: white;
+        color: #6B7FD1;
+        border: 2px solid #6B7FD1;
+    }
+
+    .auth-actions .btn-secondary:hover {
+        background: #6B7FD1;
+        color: white;
+    }
+</style>

@@ -1,0 +1,308 @@
+@page "/entries"
+@using JournalApp.Services
+@using JournalApp.Models
+
+@* [VIVA INFO]: This page handles 'Data Querying'. 
+   It allows users to search, filter, and paginate through their entire journal history.
+*@
+<PageTitle>Journal Library - Reflecta</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-12">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-6 rounded-lg shadow-sm" ShowCloseIcon="true" CloseIconClicked="(() => errorMessage = string.Empty)">
+            @errorMessage
+        </MudAlert>
+    }
+
+    <div class="d-flex align-center justify-space-between mb-8 animate-fade-in">
+        <div>
+            <MudText Typo="Typo.h3" Class="fw-bold peace-text mb-2">Journal Library</MudText>
+            <MudText Typo="Typo.h6" Class="secondary-text opacity-75">Browse, filter, and revisit every reflection you’ve saved.</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.EditNote" Size="Size.Large" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="rounded-pill px-8 py-3 shadow-lg hover-scale">
+            Write Reflection
+        </MudButton>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <MudPaper Elevation="0" Class="pa-6 rounded-xl mb-10 border-none shadow-md glass-panel" Style="background: var(--mud-palette-surface);">
+        <MudGrid Spacing="3" Class="align-center">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="searchTerm" Label="Search notes" Placeholder="Type a keyword or tag..." 
+                               Variant="Variant.Outlined" Adornment="Adornment.Start" 
+                               AdornmentIcon="@Icons.Material.Filled.Search" OnKeyUp="HandleSearchKeyUp" 
+                               Immediate="true" Class="rounded-xl" />
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex align-center gap-3 justify-end-md">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchEntries" Class="rounded-pill px-8 py-2 shadow-primary">Search</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ToggleFilters" StartIcon="@(showFilters ? Icons.Material.Filled.FilterListOff : Icons.Material.Filled.FilterList)" Class="rounded-pill px-6 py-2">
+                    Refine Filters
+                </MudButton>
+                @if (filterStartDate.HasValue || filterEndDate.HasValue || !string.IsNullOrEmpty(selectedMood) || !string.IsNullOrEmpty(selectedTag))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.FilterAltOff" Color="Color.Error" OnClick="ClearFilters" Title="Clear All Filters" Class="hover-scale" />
+                }
+            </MudItem>
+            
+            @if (showFilters)
+            {
+                <MudItem xs="12" Class="animate-slide-down">
+                    <MudDivider Class="my-4 opacity-10" />
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudDatePicker @bind-Date="filterStartDate" Label="Start date" Variant="Variant.Outlined" Class="bg-surface-dark rounded-lg" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudDatePicker @bind-Date="filterEndDate" Label="End date" Variant="Variant.Outlined" Class="bg-surface-dark rounded-lg" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudSelect T="string" @bind-Value="selectedMood" Label="Mood" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="bg-surface-dark rounded-lg">
+                                <MudSelectItem Value="@("")">All moods</MudSelectItem>
+                                @foreach (var mood in MoodDefinitions.GetAllMoods())
+                                {
+                                    <MudSelectItem Value="@mood">@mood</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudSelect T="string" @bind-Value="selectedTag" Label="Theme" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="bg-surface-dark rounded-lg">
+                                <MudSelectItem Value="@("")">All themes</MudSelectItem>
+                                @foreach (var tag in TagDefinitions.GetAllPreBuiltTags())
+                                {
+                                    <MudSelectItem Value="@tag">@tag</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" Class="d-flex justify-end pt-2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyAllFilters" Class="rounded-pill px-8">Apply Filters</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudPaper>
+
+    @if (isLoading)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 6; i++)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="rounded-xl shadow-sm h-100">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudSkeleton Width="70%" Height="32px" Class="mb-2" />
+                                <MudSkeleton Width="40%" />
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudSkeleton Width="100%" Height="120px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (entries.Any())
+    {
+        <MudGrid Spacing="4">
+            @foreach (var entry in entries)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <div class="premium-entry-card-full glass h-100 shadow-lg vibrant-card" @onclick='@(() => HandleEntryClick(entry))'>
+                        <div class="entry-card-header mb-6">
+                            <div class="mood-badge-premium @entry.PrimaryMoodCategory.ToString().ToLower()" style="position: relative;">
+                                @GetMoodEmoji(entry.PrimaryMoodCategory)
+                                @if (!string.IsNullOrEmpty(entry.Pin))
+                                {
+                                    <div class="lock-overlay">
+                                        <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Color="Color.Warning" />
+                                    </div>
+                                }
+                            </div>
+                            <div class="header-text">
+                                <MudText Typo="Typo.h6" Class="fw-extra-bold text-truncate primary-text">@entry.Title</MudText>
+                                <MudText Typo="Typo.caption" Class="uppercase-tracking opacity-60">@entry.EntryDate.ToString("MMMM dd, yyyy")</MudText>
+                            </div>
+                        </div>
+                        
+                        <div class="entry-card-body mb-6">
+                            @if (string.IsNullOrEmpty(entry.Pin))
+                            {
+                                <MudText Typo="Typo.body2" Class="line-clamp-4 secondary-text">@entry.Content</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Warning" Class="opacity-75 italic">Locked entry. Tap to unlock.</MudText>
+                            }
+                        </div>
+
+                        <div class="entry-card-footer mt-auto">
+                            <div class="tag-row mb-6">
+                                @if (!string.IsNullOrEmpty(entry.Tags))
+                                {
+                                    @foreach (var tag in entry.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).Take(3))
+                                    {
+                                        <span class="modern-tag">#@tag.Trim()</span>
+                                    }
+                                }
+                            </div>
+                            <MudDivider Class="opacity-5 mb-4" />
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center gap-1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick='@(() => HandleEntryClick(entry))' Class="hover-scale-small" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick='@(() => ConfirmDelete(entry.Id))' Class="hover-scale-small" />
+                                </div>
+                                <div class="stat-pill">
+                                    <MudIcon Icon="@(string.IsNullOrEmpty(entry.Pin) ? Icons.Material.Filled.Segment : Icons.Material.Filled.Lock)" Size="Size.Small" />
+                                    <MudText Typo="Typo.caption" Class="fw-bold">@(string.IsNullOrEmpty(entry.Pin) ? entry.WordCount.ToString() : "LOCKED")</MudText>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <div class="d-flex justify-center mt-12 pb-8">
+            <MudPagination Color="Color.Primary" Count="@totalPages" Selected="@currentPage" SelectedChanged="OnPageChanged" Variant="Variant.Filled" Class="shadow-md" />
+        </div>
+    }
+    else
+    {
+        <div class="empty-state-container mt-12">
+            <div class="empty-state-visual">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" />
+            </div>
+            <MudText Typo="Typo.h4" Class="fw-bold mt-6 mb-2">No entries found</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-8 opacity-75">Try adjusting your search or filters to see results.</MudText>
+            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="ClearFilters" Size="Size.Large" Class="rounded-pill px-8">Reset Filters</MudButton>
+        </div>
+    }
+</MudContainer>
+
+<style>
+    .fw-extra-bold { font-weight: 900 !important; }
+    .fw-bold { font-weight: 700 !important; }
+    .uppercase-tracking { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; font-weight: 800; }
+    .opacity-75 { opacity: 0.75; }
+    .opacity-60 { opacity: 0.6; }
+    .primary-text { color: var(--mud-palette-primary); }
+    .secondary-text { color: var(--mud-palette-text-secondary); }
+
+    .peace-text {
+        color: var(--primary-color) !important;
+    }
+
+    .glass-panel {
+        backdrop-filter: blur(10px);
+        background: rgba(var(--mud-palette-surface-rgb), 0.8) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05) !important;
+    }
+
+    .premium-entry-card-full {
+        background: var(--mud-palette-surface);
+        border-radius: 1.5rem;
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05);
+    }
+    .premium-entry-card-full:hover {
+        transform: translateY(-8px);
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.2);
+        box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1);
+    }
+
+    .mood-badge-premium {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        flex-shrink: 0;
+    }
+    .mood-badge-premium.positive { background: rgba(16, 185, 129, 0.1); }
+    .mood-badge-premium.neutral { background: rgba(59, 130, 246, 0.1); }
+    .mood-badge-premium.negative { background: rgba(239, 68, 68, 0.1); }
+
+    .lock-overlay {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        background: #1E2633;
+        border: 2px solid #E9B86F;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .modern-tag {
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        color: var(--mud-palette-primary);
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .stat-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(var(--mud-palette-surface-rgb), 0.3);
+        padding: 4px 12px;
+        border-radius: 50px;
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.8rem;
+    }
+
+    .empty-state-container {
+        text-align: center;
+        padding: 6rem 2rem;
+        background: rgba(var(--mud-palette-primary-rgb), 0.02);
+        border-radius: 2rem;
+        border: 2px dashed rgba(var(--mud-palette-divider-rgb), 0.1);
+    }
+    .empty-state-visual {
+        width: 100px;
+        height: 100px;
+        background: var(--mud-palette-surface);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
+    .empty-state-visual .mud-icon-root { font-size: 48px !important; color: var(--mud-palette-primary); }
+
+    .shadow-primary { box-shadow: 0 8px 16px -4px rgba(var(--mud-palette-primary-rgb), 0.4); }
+    .hover-scale:hover { transform: scale(1.05); }
+    .hover-scale-small:hover { transform: scale(1.1); }
+
+    .line-clamp-4 {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    @@keyframes fade-in {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fade-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+</style>
+
+@code {
+}

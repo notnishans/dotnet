@@ -1,0 +1,439 @@
+@page "/calendar"
+@using JournalApp.Services
+@using JournalApp.Models
+
+@* [VIVA INFO]: The Calendar component demonstrates 'Advanced UX'. 
+   It maps database entries to a visual grid representing time.
+*@
+<PageTitle>Memory Calendar - Reflecta</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-12">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-6 rounded-lg shadow-sm" ShowCloseIcon="true" CloseIconClicked="(() => errorMessage = string.Empty)">
+            @errorMessage
+        </MudAlert>
+    }
+
+    <div class="d-flex align-center justify-space-between mb-8 animate-fade-in">
+        <div>
+            <MudText Typo="Typo.h3" Class="fw-bold primary-gradient-text">Memory Calendar</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mt-1 opacity-75">Browse reflections by day and mood.</MudText>
+        </div>
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Today" OnClick="() => currentDate = DateTime.Today" Class="rounded-pill px-6">Jump to Today</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.EditNote" Size="Size.Large" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="rounded-pill px-8 shadow-lg hover-scale">
+                Write Reflection
+            </MudButton>
+        </div>
+    </div>
+
+    <MudGrid Spacing="4" Class="animate-fade-in-up">
+        <MudItem xs="12" lg="8">
+            <MudPaper Elevation="0" Class="pa-8 rounded-xl shadow-lg border border-opacity-10 overflow-hidden glass-panel" Style="background: var(--mud-palette-surface);">
+                <div class="calendar-nav-header mb-8">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Primary" OnClick="PreviousMonth" Class="nav-btn-modern" />
+                    <div class="text-center px-4">
+                        <MudText Typo="Typo.h3" Class="fw-extra-bold primary-gradient-text uppercase-tracking">@currentDate.ToString("MMMM")</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Secondary" Class="opacity-50">@currentDate.Year</MudText>
+                    </div>
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowForwardIos" Color="Color.Primary" OnClick="NextMonth" Class="nav-btn-modern" />
+                </div>
+
+                <div class="calendar-grid-modern">
+                    @foreach (var day in new[] { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" })
+                    {
+                        <div class="calendar-weekday-header">@day</div>
+                    }
+
+                    @foreach (var day in calendarDays)
+                    {
+                        var hasEntry = entriesByDate.ContainsKey(day.Date);
+                        var isToday = day.Date == DateTime.Today;
+                        var isSelected = selectedDate.HasValue && day.Date == selectedDate.Value.Date;
+                        var isOtherMonth = day.Month != currentDate.Month;
+                        var moodCategory = hasEntry ? entriesByDate[day.Date].PrimaryMoodCategory.ToString().ToLower() : "";
+
+                        <div class='calendar-day-cell @(isOtherMonth ? "other-month" : "") @(isSelected ? "selected" : "") @(hasEntry ? "has-entry" : "") @(isToday ? "today-cell" : "")'
+                             @onclick="() => SelectDate(day)">
+                            <div class="day-content">
+                                <span class="day-label">@day.Day</span>
+                                @if (hasEntry)
+                                {
+                                    <div class="mood-glow @moodCategory"></div>
+                                    <div class="entry-indicator-premium @moodCategory">
+                                        <div class="indicator-inner"></div>
+                                    </div>
+                                    <div class="entry-emoji-float">@GetMoodEmoji(moodCategory)</div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                <div class="calendar-legend mt-10 pt-8 border-t border-opacity-5">
+                    <div class="legend-item"><div class="legend-dot status-positive"></div><span>Bright</span></div>
+                    <div class="legend-item"><div class="legend-dot status-neutral"></div><span>Neutral</span></div>
+                    <div class="legend-item"><div class="legend-dot status-negative"></div><span>Heavy</span></div>
+                    <div class="legend-item"><div class="legend-pill-today"></div><span>Today</span></div>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" lg="4">
+            <div class="sticky-top" style="top: 2rem;">
+                @if (selectedDate != null)
+                {
+                    <div class="animate-slide-left-fade h-100">
+                        <MudPaper Elevation="0" Class="pa-8 rounded-xl shadow-xl h-100 d-flex flex-column border border-opacity-10 glass-panel" Style="background: var(--mud-palette-surface); min-height: 500px;">
+                            <div class="d-flex align-center gap-5 mb-8">
+                                <div class="date-badge-premium">
+                                    <span class="month">@selectedDate.Value.ToString("MMM")</span>
+                                    <span class="day">@selectedDate.Value.Day</span>
+                                </div>
+                                <div class="header-content">
+                                    <MudText Typo="Typo.h4" Class="fw-extra-bold">@selectedDate.Value.ToString("dddd")</MudText>
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="opacity-60">@(selectedEntry != null ? "Entry details" : "No entry yet")</MudText>
+                                </div>
+                            </div>
+
+                            @if (selectedEntry != null)
+                            {
+                                <div class="selected-entry-content flex-grow-1 animate-fade-in" style="animation-delay: 0.2s;">
+                                    <MudText Typo="Typo.h5" Class="fw-bold mb-4 secondary-text">@selectedEntry.Title</MudText>
+                                    
+                                    <div class="d-flex align-center gap-3 mb-8">
+                                        <div class="mood-chip-premium @selectedEntry.PrimaryMoodCategory.ToString().ToLower()">
+                                            <span class="emoji">@GetMoodEmoji(selectedEntry.PrimaryMood)</span>
+                                            <span class="label">@selectedEntry.PrimaryMood</span>
+                                        </div>
+                                        <div class="stat-pill">
+                                            <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" />
+                                            <span>@selectedEntry.WordCount words</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="entry-preview-box mb-8">
+                                        <MudText Typo="Typo.body1" Class="entry-body-text">@selectedEntry.Content</MudText>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(selectedEntry.Tags))
+                                    {
+                                        <div class="d-flex flex-wrap gap-2 mb-8">
+                                            @foreach (var tag in selectedEntry.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                            {
+                                                <div class="tag-chip-minimal">#@tag.Trim()</div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="mt-auto pt-6 border-t border-opacity-5">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                                               StartIcon="@Icons.Material.Filled.EditNote" 
+                                               FullWidth="true"
+                                               Size="Size.Large"
+                                               OnClick="() => EditEntry(selectedEntry.Id)" 
+                                               Class="rounded-xl py-4 shadow-primary hover-lift">
+                                        Edit Entry
+                                    </MudButton>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-state-container flex-grow-1 d-flex flex-column align-center justify-center text-center pa-4">
+                                    <div class="visual-anchor mb-8">
+                                        <div class="blob-animation"></div>
+                                        <MudIcon Icon="@Icons.Material.Filled.AutoStories" Class="anchor-icon" />
+                                    </div>
+                                    <MudText Typo="Typo.h5" Class="fw-bold mb-3">Quiet day</MudText>
+                                    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-10 opacity-70">No entry yet. Add a short reflection for this date.</MudText>
+                                    <MudButton Variant="Variant.Filled" 
+                                               Color="Color.Primary" 
+                                               FullWidth="true"
+                                               Size="Size.Large"
+                                               StartIcon="@Icons.Material.Filled.Create" 
+                                               OnClick="() => CreateEntryForDate(selectedDate.Value)" 
+                                               Class="rounded-xl py-4 shadow-primary hover-lift">
+                                        Write for this day
+                                    </MudButton>
+                                </div>
+                            }
+                        </MudPaper>
+                    </div>
+                }
+                else
+                {
+                    <MudPaper Elevation="0" Class="pa-12 rounded-xl border-2 border-dashed d-flex flex-column align-center justify-center text-center h-100 glass-panel empty-selection-placeholder" 
+                              Style="border-color: rgba(var(--mud-palette-primary-rgb), 0.15); background: transparent; min-height: 500px;">
+                        <div class="pulse-ring mb-8">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                        <MudText Typo="Typo.h5" Class="fw-extra-bold mb-3 primary-text">Select a date</MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="opacity-60 max-w-xs mx-auto">Pick a day to view entries or start a new reflection.</MudText>
+                    </MudPaper>
+                }
+            </div>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .fw-bold { font-weight: 700 !important; }
+    .fw-extra-bold { font-weight: 900 !important; }
+    .uppercase-tracking { text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.8rem; }
+    .opacity-60 { opacity: 0.6; }
+    .secondary-text { color: var(--mud-palette-text-secondary); }
+
+    .primary-gradient-text {
+        background: linear-gradient(135deg, #6B7FD1 0%, #86C5C2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .glass-panel {
+        backdrop-filter: blur(10px);
+        background: rgba(var(--mud-palette-surface-rgb), 0.8) !important;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05) !important;
+    }
+
+    .nav-btn-modern {
+        background: rgba(var(--mud-palette-primary-rgb), 0.08) !important;
+        border-radius: 12px !important;
+        padding: 10px !important;
+        transition: all 0.2s;
+    }
+    .nav-btn-modern:hover {
+        background: var(--mud-palette-primary) !important;
+        color: white !important;
+        transform: scale(1.1);
+    }
+
+    .calendar-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 16px;
+    }
+    .calendar-weekday-header {
+        text-align: center;
+        font-weight: 800;
+        font-size: 0.7rem;
+        padding-bottom: 1.5rem;
+        color: var(--mud-palette-text-secondary);
+        opacity: 0.5;
+        letter-spacing: 0.1em;
+    }
+
+    .calendar-day-cell {
+        aspect-ratio: 1/1;
+        border-radius: 1.5rem;
+        background: rgba(var(--mud-palette-surface-rgb), 0.03);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 2px solid transparent;
+    }
+    .calendar-day-cell:hover {
+        transform: translateY(-5px);
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.1);
+    }
+    .calendar-day-cell.selected {
+        background: var(--mud-palette-primary) !important;
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 15px 30px -10px rgba(var(--mud-palette-primary-rgb), 0.5);
+    }
+    .calendar-day-cell.selected .day-label { color: white !important; }
+    .calendar-day-cell.selected .entry-emoji-float { opacity: 1; transform: scale(1.2); }
+    .calendar-day-cell.other-month { opacity: 0.2; cursor: default; }
+    
+    .today-cell .day-label {
+        color: var(--mud-palette-primary);
+        font-weight: 900;
+    }
+    .today-cell:not(.selected) {
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.3);
+        background: rgba(var(--mud-palette-primary-rgb), 0.02);
+    }
+
+    .day-label { font-size: 1.25rem; font-weight: 700; color: var(--mud-palette-text-primary); transition: color 0.2s; }
+
+    .mood-glow {
+        position: absolute;
+        inset: 4px;
+        border-radius: 1.25rem;
+        opacity: 0.08;
+    }
+    .mood-glow.positive { background: #6BBF9E; }
+    .mood-glow.neutral { background: #8CA9E8; }
+    .mood-glow.negative { background: #E47C8B; }
+
+    .entry-indicator-premium {
+        position: absolute;
+        bottom: 15%;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .entry-indicator-premium.positive { background: #6BBF9E; box-shadow: 0 0 10px #6BBF9E; }
+    .entry-indicator-premium.neutral { background: #8CA9E8; box-shadow: 0 0 10px #8CA9E8; }
+    .entry-indicator-premium.negative { background: #E47C8B; box-shadow: 0 0 10px #E47C8B; }
+
+    .entry-emoji-float {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 1rem;
+        opacity: 0.6;
+        transition: all 0.3s;
+    }
+
+    .calendar-legend {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; font-weight: 700; color: var(--mud-palette-text-secondary); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .legend-dot.status-positive { background: #6BBF9E; }
+    .legend-dot.status-neutral { background: #8CA9E8; }
+    .legend-dot.status-negative { background: #E47C8B; }
+    .legend-pill-today { width: 14px; height: 14px; border-radius: 4px; border: 2.5px solid var(--mud-palette-primary); }
+
+    .date-badge-premium {
+        background: linear-gradient(135deg, #6B7FD1 0%, #86C5C2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 75px;
+        box-shadow: 0 8px 16px -4px rgba(107, 127, 209, 0.35);
+    }
+    .date-badge-premium .month { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.8; margin-bottom: 2px; }
+    .date-badge-premium .day { font-size: 1.75rem; font-weight: 900; line-height: 1; }
+
+    .mood-chip-premium {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .mood-chip-premium.positive { background: rgba(107, 191, 158, 0.12); color: #4E9E7D; }
+    .mood-chip-premium.neutral { background: rgba(140, 169, 232, 0.12); color: #6A86D6; }
+    .mood-chip-premium.negative { background: rgba(228, 124, 139, 0.12); color: #C86778; }
+
+    .stat-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(var(--mud-palette-surface-rgb), 0.05);
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .entry-preview-box {
+        background: rgba(var(--mud-palette-surface-rgb), 0.03);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05);
+    }
+    .entry-body-text {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--mud-palette-text-primary);
+        opacity: 0.85;
+        white-space: pre-wrap;
+    }
+
+    .tag-chip-minimal {
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        color: var(--mud-palette-primary);
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 1px solid rgba(var(--mud-palette-primary-rgb), 0.1);
+    }
+
+    .visual-anchor {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .anchor-icon { font-size: 64px !important; color: var(--mud-palette-primary); opacity: 0.8; position: relative; z-index: 2; }
+    .blob-animation {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        background: rgba(var(--mud-palette-primary-rgb), 0.1);
+        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        animation: blob-swing 8s ease-in-out infinite;
+        z-index: 1;
+    }
+
+    .pulse-ring {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        background: rgba(var(--mud-palette-primary-rgb), 0.05);
+        border-radius: 50%;
+        position: relative;
+    }
+    .pulse-ring::after {
+        content: "";
+        position: absolute;
+        inset: -10px;
+        border: 2px solid rgba(var(--mud-palette-primary-rgb), 0.1);
+        border-radius: 50%;
+        animation: pulse-out 2s infinite;
+    }
+
+    .shadow-primary { box-shadow: 0 10px 25px -5px rgba(var(--mud-palette-primary-rgb), 0.4); }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(var(--mud-palette-primary-rgb), 0.5); }
+    .hover-scale:hover { transform: scale(1.05); }
+
+    @@keyframes blob-swing {
+        0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: scale(1); }
+        33% { border-radius: 60% 40% 30% 70% / 50% 30% 70% 60%; transform: scale(1.1) rotate(10deg); }
+        66% { border-radius: 30% 70% 50% 50% / 60% 70% 30% 40%; transform: scale(0.95) rotate(-10deg); }
+    }
+
+    @@keyframes pulse-out {
+        0% { transform: scale(0.8); opacity: 1; }
+        100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    @@keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    
+    @@keyframes slide-left-fade {
+        from { opacity: 0; transform: translateX(30px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .animate-slide-left-fade { animation: slide-left-fade 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+</style>
+
+@code {
+}
