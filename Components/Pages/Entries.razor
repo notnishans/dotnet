@@ -5,7 +5,7 @@
 @* [VIVA INFO]: This page handles 'Data Querying'. 
    It allows users to search, filter, and paginate through their entire journal history.
 *@
-<PageTitle>Journal Library - Reflecta</PageTitle>
+<PageTitle>Reflection Library - Reflecta</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-12">
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -17,11 +17,11 @@
 
     <div class="d-flex align-center justify-space-between mb-8 animate-fade-in">
         <div>
-            <MudText Typo="Typo.h3" Class="fw-bold peace-text mb-2">Journal Library</MudText>
-            <MudText Typo="Typo.h6" Class="secondary-text opacity-75">Browse, filter, and revisit every reflection you’ve saved.</MudText>
+            <MudText Typo="Typo.h3" Class="fw-bold peace-text mb-2">Reflection Library</MudText>
+            <MudText Typo="Typo.h6" Class="secondary-text opacity-75">Search and revisit everything you’ve written.</MudText>
         </div>
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Medium" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="new-entry-button">
-            New Entry
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.EditNote" Size="Size.Medium" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="new-entry-button">
+            Write Reflection
         </MudButton>
     </div>
 
@@ -29,19 +29,19 @@
     <MudPaper Elevation="0" Class="pa-6 rounded-xl mb-10 border-none shadow-md glass-panel" Style="background: var(--mud-palette-surface);">
         <MudGrid Spacing="3" Class="align-center">
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="searchTerm" Label="Search notes" Placeholder="Type a keyword or tag..." 
+                <MudTextField @bind-Value="searchTerm" Label="Search reflections" Placeholder="Keyword, title, or tag..." 
                                Variant="Variant.Outlined" Adornment="Adornment.Start" 
-                               AdornmentIcon="@Icons.Material.Filled.Search" OnKeyUp="HandleSearchKeyUp" 
+                               AdornmentIcon="@Icons.Material.Rounded.Search" OnKeyUp="HandleSearchKeyUp" 
                                Immediate="true" Class="rounded-xl" />
             </MudItem>
             <MudItem xs="12" md="6" Class="d-flex align-center gap-3 justify-end-md">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchEntries" Class="rounded-pill px-8 py-2 shadow-primary">Search</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ToggleFilters" StartIcon="@(showFilters ? Icons.Material.Filled.FilterListOff : Icons.Material.Filled.FilterList)" Class="rounded-pill px-6 py-2">
-                    Refine Filters
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchEntries" Class="rounded-lg px-8 py-2 shadow-primary">Search</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ToggleFilters" StartIcon="@(showFilters ? Icons.Material.Rounded.FilterAltOff : Icons.Material.Rounded.FilterAlt)" Class="rounded-lg px-6 py-2">
+                    Filters
                 </MudButton>
                 @if (filterStartDate.HasValue || filterEndDate.HasValue || !string.IsNullOrEmpty(selectedMood) || !string.IsNullOrEmpty(selectedTag))
                 {
-                    <MudIconButton Icon="@Icons.Material.Filled.FilterAltOff" Color="Color.Error" OnClick="ClearFilters" Title="Clear All Filters" Class="hover-scale" />
+                    <MudIconButton Icon="@Icons.Material.Rounded.Clear" Color="Color.Error" OnClick="ClearFilters" Title="Clear filters" Class="hover-scale" />
                 }
             </MudItem>
             
@@ -66,8 +66,8 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="3">
-                            <MudSelect T="string" @bind-Value="selectedTag" Label="Theme" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="bg-surface-dark rounded-lg">
-                                <MudSelectItem Value="@("")">All themes</MudSelectItem>
+                            <MudSelect T="string" @bind-Value="selectedTag" Label="Tag" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="bg-surface-dark rounded-lg">
+                                <MudSelectItem Value="@("")">All tags</MudSelectItem>
                                 @foreach (var tag in TagDefinitions.GetAllPreBuiltTags())
                                 {
                                     <MudSelectItem Value="@tag">@tag</MudSelectItem>
@@ -75,7 +75,7 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" Class="d-flex justify-end pt-2">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyAllFilters" Class="rounded-pill px-8">Apply Filters</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyAllFilters" Class="rounded-lg px-8">Apply Filters</MudButton>
                         </MudItem>
                     </MudGrid>
                 </MudItem>
@@ -117,7 +117,7 @@
                                 @if (!string.IsNullOrEmpty(entry.Pin))
                                 {
                                     <div class="lock-overlay">
-                                        <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Color="Color.Warning" />
+                                        <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" Color="Color.Warning" />
                                     </div>
                                 }
                             </div>
@@ -151,11 +151,11 @@
                             <MudDivider Class="opacity-5 mb-4" />
                             <div class="d-flex align-center justify-space-between">
                                 <div class="d-flex align-center gap-1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick='@(() => HandleEntryClick(entry))' Class="hover-scale-small" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick='@(() => ConfirmDelete(entry.Id))' Class="hover-scale-small" />
+                                    <MudIconButton Icon="@Icons.Material.Rounded.Edit" Color="Color.Primary" Size="Size.Small" OnClick='@(() => HandleEntryClick(entry))' Class="hover-scale-small" />
+                                    <MudIconButton Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Size="Size.Small" OnClick='@(() => ConfirmDelete(entry.Id))' Class="hover-scale-small" />
                                 </div>
                                 <div class="stat-pill">
-                                    <MudIcon Icon="@(string.IsNullOrEmpty(entry.Pin) ? Icons.Material.Filled.Segment : Icons.Material.Filled.Lock)" Size="Size.Small" />
+                                    <MudIcon Icon="@(string.IsNullOrEmpty(entry.Pin) ? Icons.Material.Rounded.Segment : Icons.Material.Rounded.Lock)" Size="Size.Small" />
                                     <MudText Typo="Typo.caption" Class="fw-bold">@(string.IsNullOrEmpty(entry.Pin) ? entry.WordCount.ToString() : "LOCKED")</MudText>
                                 </div>
                             </div>
@@ -173,7 +173,7 @@
     {
         <div class="empty-state-container mt-12">
             <div class="empty-state-visual">
-                <MudIcon Icon="@Icons.Material.Filled.SearchOff" />
+                <MudIcon Icon="@Icons.Material.Rounded.SearchOff" />
             </div>
             <MudText Typo="Typo.h4" Class="fw-bold mt-6 mb-2">No entries found</MudText>
             <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-8 opacity-75">Try adjusting your search or filters to see results.</MudText>

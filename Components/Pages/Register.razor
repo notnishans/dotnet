@@ -2,56 +2,56 @@
 @using JournalApp.Models
 @using JournalApp.Services
 
-<PageTitle>Create Account - Reflecta</PageTitle>
+<PageTitle>Create Profile - Reflecta</PageTitle>
 
 <div class="login-wrapper">
     <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
         <MudCard Elevation="8" Class="rounded-lg login-card-premium overflow-hidden">
             <div class="login-banner">
-                <MudIcon Icon="@Icons.Material.Filled.AppRegistration" Size="Size.Large" Color="Color.Inherit" Class="mb-2" />
-                <MudText Typo="Typo.h5" Color="Color.Inherit"><b>Create your Reflecta space</b></MudText>
+                <MudIcon Icon="@Icons.Material.Rounded.PersonAddAlt" Size="Size.Large" Color="Color.Inherit" Class="mb-2" />
+                <MudText Typo="Typo.h5" Color="Color.Inherit"><b>Set up your space</b></MudText>
             </div>
             
             <MudCardContent Class="pa-8">
-                <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true"><b>Set up your journal</b></MudText>
-                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-8">A calm, private space for your reflections.</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true"><b>Create your profile</b></MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-8">Start a private space for daily reflections.</MudText>
                 
                 <EditForm Model="registerModel" OnValidSubmit="HandleRegister">
                     <DataAnnotationsValidator />
                     
-                    <MudTextField @bind-Value="registerModel.Username" Label="Account name" Variant="Variant.Outlined" 
+                    <MudTextField @bind-Value="registerModel.Username" Label="Display name" Variant="Variant.Outlined" 
                                   FullWidth="true" Class="mb-4" Adornment="Adornment.Start" 
-                                  AdornmentIcon="@Icons.Material.Filled.Person" />
+                                  AdornmentIcon="@Icons.Material.Rounded.AccountCircle" />
 
-                    <MudTextField @bind-Value="registerModel.Email" Label="Email address" Variant="Variant.Outlined" 
+                    <MudTextField @bind-Value="registerModel.Email" Label="Email" Variant="Variant.Outlined" 
                                   InputType="InputType.Email" FullWidth="true" Class="mb-4" 
-                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Email" />
                                   
-                    <MudTextField @bind-Value="registerModel.Password" Label="Create a password" Variant="Variant.Outlined" 
+                    <MudTextField @bind-Value="registerModel.Password" Label="Password" Variant="Variant.Outlined" 
                                   InputType="InputType.Password" FullWidth="true" Class="mb-4" 
-                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" 
-                                  HelperText="At least 6 characters" />
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Lock" 
+                                  HelperText="Minimum 6 characters" />
 
                     <MudTextField @bind-Value="registerModel.ConfirmPassword" Label="Confirm password" Variant="Variant.Outlined" 
                                   InputType="InputType.Password" FullWidth="true" Class="mb-6" 
-                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Lock" />
                     
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" 
-                               FullWidth="true" Size="Size.Large" Disabled="@isLoading" Class="rounded-pill py-3">
+                               FullWidth="true" Size="Size.Large" Disabled="@isLoading" Class="rounded-lg py-3">
                         @if (isLoading)
                         {
                             <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                            <MudText Class="ms-2">Creating your space...</MudText>
+                            <MudText Class="ms-2">Creating your profile...</MudText>
                         }
                         else
                         {
-                            <MudText>Create Journal</MudText>
+                            <MudText>Create Profile</MudText>
                         }
                     </MudButton>
                 </EditForm>
                 
                 <div class="mt-8 text-center">
-                    <MudText Typo="Typo.body2">Already set up? <MudLink Href="/login" Underline="Underline.Always"><b>Sign in</b></MudLink></MudText>
+                    <MudText Typo="Typo.body2">Already have an account? <MudLink Href="/login" Underline="Underline.Always"><b>Sign in</b></MudLink></MudText>
                 </div>
             </MudCardContent>
         </MudCard>
@@ -61,17 +61,17 @@
 <style>
     .login-wrapper {
         min-height: 80vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        place-items: center;
     }
     .login-card-premium {
-        max-width: 500px;
+        max-width: 480px;
+        border-radius: 20px;
     }
     .login-banner {
-        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        background: var(--mud-palette-primary);
         color: white;
-        padding: 40px;
+        padding: 36px;
         text-align: center;
         display: flex;
         flex-direction: column;

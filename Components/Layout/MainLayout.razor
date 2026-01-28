@@ -18,7 +18,7 @@
     <MudAppBar Elevation="0" Class="glass-appbar px-4 py-2">
         <div class="d-flex align-center gap-3">
             <div class="logo-circle">
-                <MudIcon Icon="@Icons.Material.Filled.AutoStories" Color="Color.Primary" Size="Size.Medium" />
+                <MudIcon Icon="@Icons.Material.Rounded.AutoStories" Color="Color.Primary" Size="Size.Medium" />
             </div>
             <MudText Typo="Typo.h5" Class="title-gradient fw-extra-bold">JournalApp</MudText>
         </div>
@@ -57,21 +57,21 @@
     }
 
     .title-gradient, .primary-gradient-text {
-        background: linear-gradient(135deg, #CDA1FF 0%, #7CC8B6 50%, #F4B49A 100%);
+        background: var(--mud-palette-primary);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         letter-spacing: -0.04em;
         filter: drop-shadow(0 0 1px rgba(255,255,255,0.1));
     }
 
-    .peace-text { color: #9C86E5 !important; }
+    .peace-text { color: #FF69B4 !important; }
 
     .fw-extra-bold { font-weight: 900 !important; }
     .fw-bold { font-weight: 700 !important; }
 
     .user-pill {
-        background: rgba(156, 134, 229, 0.12);
-        border: 1px solid rgba(156, 134, 229, 0.2);
+        background: rgba(255, 105, 180, 0.12);
+        border: 1px solid rgba(255, 105, 180, 0.2);
     }
 
     .premium-drawer {
@@ -82,12 +82,12 @@
     .logo-circle {
         width: 36px;
         height: 36px;
-        background: rgba(156, 134, 229, 0.12);
+        background: rgba(255, 105, 180, 0.12);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 10px -2px rgba(156, 134, 229, 0.3);
+        box-shadow: 0 4px 10px -2px rgba(255, 105, 180, 0.3);
     }
 
     .hover-rotate:hover { transform: rotate(90deg); }
@@ -101,7 +101,7 @@
     }
 
     .primary-text {
-        color: @(_isDarkMode ? "#D6C7FF" : "#9C86E5") !important;
+        color: @(_isDarkMode ? "#FF69B4" : "#FF69B4") !important;
     }
 
     .secondary-text { color: var(--mud-palette-text-secondary) !important; }
@@ -114,7 +114,7 @@
         border-radius: 24px;
     }
 
-    .shadow-primary { box-shadow: 0 8px 24px -4px rgba(156, 134, 229, 0.35) !important; }
+    .shadow-primary { box-shadow: 0 8px 24px -4px rgba(255, 105, 180, 0.35) !important; }
     
     .glow-button {
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
@@ -137,7 +137,7 @@
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#9C86E5",
+            Primary = "#FF69B4",
             Secondary = "#7CC8B6",
             Tertiary = "#F4B49A",
             Background = "#FDFBF7",
@@ -152,7 +152,7 @@
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "#D6C7FF",
+            Primary = "#FF69B4",
             Secondary = "#93D7C4",
             Tertiary = "#F6C3AE",
             Surface = "#141D25",

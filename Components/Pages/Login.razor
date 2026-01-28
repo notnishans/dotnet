@@ -3,53 +3,53 @@
 @using JournalApp.Services
 
 @* [VIVA INFO]: This page handles User Input Collection and calls the Auth Service. *@
-<PageTitle>Sign In - Reflecta</PageTitle>
+<PageTitle>Access Portal - Reflecta</PageTitle>
 
 <div class="login-wrapper">
     <MudContainer MaxWidth="MaxWidth.Small" Class="pa-0">
         <MudCard Elevation="8" Class="rounded-lg login-card-premium overflow-hidden">
             <div class="login-banner">
-                <MudIcon Icon="@Icons.Material.Filled.Book" Size="Size.Large" Color="Color.Inherit" Class="mb-2" />
+                <MudIcon Icon="@Icons.Material.Rounded.AutoStories" Size="Size.Large" Color="Color.Inherit" Class="mb-2" />
                 <MudText Typo="Typo.h5" Color="Color.Inherit"><b>Reflecta</b></MudText>
             </div>
             
             <MudCardContent Class="pa-8">
                 <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true"><b>Welcome back</b></MudText>
-                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-8">Unlock your private space.</MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary" Class="mb-8">Sign in to your reflection space.</MudText>
                 
                 @* [FORM HANDLING]: Blazor's EditForm handles validation automatically. *@
                 <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
                     <DataAnnotationsValidator />
                     
-                    <MudTextField @bind-Value="loginModel.Username" Label="Account name" Variant="Variant.Outlined" 
+                    <MudTextField @bind-Value="loginModel.Username" Label="Email or username" Variant="Variant.Outlined" 
                                   FullWidth="true" Class="mb-4" Adornment="Adornment.Start" 
-                                  AdornmentIcon="@Icons.Material.Filled.Person" />
+                                  AdornmentIcon="@Icons.Material.Rounded.AccountCircle" />
                                   
-                    <MudTextField @bind-Value="loginModel.Password" Label="Access key" Variant="Variant.Outlined" 
+                    <MudTextField @bind-Value="loginModel.Password" Label="Password" Variant="Variant.Outlined" 
                                   InputType="InputType.Password" FullWidth="true" Class="mb-4" 
-                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Lock" />
                     
                     <div class="d-flex align-center justify-space-between mb-6">
-                        <MudCheckBox @bind-Value="loginModel.RememberMe" Label="Keep me signed in" Color="Color.Primary" Dense="true" />
-                        <MudLink Href="/forgot-password" Underline="Underline.None" Typo="Typo.body2">Need help?</MudLink>
+                        <MudCheckBox @bind-Value="loginModel.RememberMe" Label="Stay signed in" Color="Color.Primary" Dense="true" />
+                        <MudLink Href="/forgot-password" Underline="Underline.None" Typo="Typo.body2">Forgot password?</MudLink>
                     </div>
                     
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" 
-                               FullWidth="true" Size="Size.Large" Disabled="@isLoading" Class="rounded-pill py-3">
+                               FullWidth="true" Size="Size.Large" Disabled="@isLoading" Class="rounded-lg py-3">
                         @if (isLoading)
                         {
                             <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                            <MudText Class="ms-2">Opening your space...</MudText>
+                            <MudText Class="ms-2">Signing you in...</MudText>
                         }
                         else
                         {
-                            <MudText>Enter Journal</MudText>
+                            <MudText>Enter Workspace</MudText>
                         }
                     </MudButton>
                 </EditForm>
                 
                 <div class="mt-8 text-center">
-                    <MudText Typo="Typo.body2">New here? <MudLink Href="/register" Underline="Underline.Always"><b>Create your journal</b></MudLink></MudText>
+                    <MudText Typo="Typo.body2">New here? <MudLink Href="/register" Underline="Underline.Always"><b>Create an account</b></MudLink></MudText>
                 </div>
             </MudCardContent>
         </MudCard>
@@ -59,17 +59,17 @@
 <style>
     .login-wrapper {
         min-height: 80vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        place-items: center;
     }
     .login-card-premium {
-        max-width: 450px;
+        max-width: 460px;
+        border-radius: 20px;
     }
     .login-banner {
-        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        background: var(--mud-palette-primary);
         color: white;
-        padding: 40px;
+        padding: 36px;
         text-align: center;
         display: flex;
         flex-direction: column;

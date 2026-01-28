@@ -3,10 +3,10 @@
 /* Light Theme (Vibrant & Energetic) */
 :root,
 [data-theme="Light"] {
-    /* Primary Colors - Soft Iris */
-    --primary-color: #7C8FD9;
-    --primary-hover: #6C7FC7;
-    --primary-light: #EFF2FF;
+    /* Primary Colors - Hot Pink */
+    --primary-color: #FF69B4;
+    --primary-hover: #FF4FA7;
+    --primary-light: #FFE1F0;
 
     /* Secondary Colors - Calm Teal */
     --secondary-color: #8EC9C3;
@@ -42,51 +42,59 @@
     --mood-positive: #74C4A6;
     --mood-neutral: #96B0EE;
     --mood-negative: #E78895;
+
+    /* Snackbar Colors (Neutral Grey with Pink Accents) */
+    --snackbar-bg: #E6E8EC;
+    --snackbar-text: #2B3038;
+    --snackbar-border: #FF69B4;
+    --snackbar-icon: #FF69B4;
 }
 
 /* Dark Theme (Modern and Eye-friendly) */
 [data-theme="Dark"] {
-    /* Primary Colors - Soft Iris (Dark) */
-    --primary-color: #A9B8FF;
-        /* Primary Colors - Soft Amethyst */
-        --primary-color: #9C86E5;
-        --primary-hover: #8A74D1;
-        --primary-light: #F3EEFF;
+    /* Primary Colors - Hot Pink (Dark) */
+    --primary-color: #FF69B4;
+    --primary-hover: #FF4FA7;
+    --primary-light: #2A3240;
 
-        /* Secondary Colors - Seafoam */
-        --secondary-color: #7CC8B6;
-        --secondary-hover: #6FB6A6;
+    /* Secondary Colors */
+    --secondary-color: #93D7C4;
+    --secondary-hover: #7FC7B4;
 
-        /* Status Colors */
-        --success-color: #7CC9B0;
-        --danger-color: #E8929F;
-        --warning-color: #E8C28E;
-        --info-color: #A2B5F2;
+    /* Status Colors - Soft in dark */
+    --success-color: #89D3BB;
+    --danger-color: #F0A7B2;
+    --warning-color: #F0CF9D;
+    --info-color: #B3C5F5;
 
-        /* Background Colors */
-        --body-bg: #FDFBF7;
-        --content-bg: #FFFFFF;
-        --sidebar-bg: #121A22;
-        --card-bg: #FFFFFF;
-        --hover-bg: #F3F1EC;
+    /* Background Colors - Deep, soft */
+    --body-bg: #0F151C;
+    --content-bg: #141D25;
+    --sidebar-bg: #101820;
+    --card-bg: #141D25;
+    --hover-bg: #1A232C;
 
-        /* Text Colors */
-        --text-primary: #2A2F33;
-        --text-secondary: #6F7C86;
-        --text-muted: #9AA6B0;
-        --text-on-dark: #FFFFFF;
+    /* Text Colors - High Contrast for Dark Mode */
+    --text-primary: #f5f0e9;
+    --text-secondary: #d2d7dd;
+    --text-muted: #aab3bc;
+    --text-on-dark: #ffffff;
 
-        /* Border and Shadow */
-        --border-color: #E7E1D8;
-        --border-light: #F4EFE7;
-        --shadow-sm: 0 2px 6px rgba(42, 47, 51, 0.06);
-        --shadow-md: 0 10px 20px rgba(42, 47, 51, 0.12);
-        --shadow-lg: 0 18px 40px rgba(42, 47, 51, 0.16);
+    /* Border and Shadow */
+    --border-color: #2B353F;
+    --border-light: #323E4A;
 
-        /* Mood Colors */
-        --mood-positive: #7CC9B0;
-        --mood-neutral: #A2B5F2;
-        --mood-negative: #E8929F;
+    /* Mood Colors - Dark Theme (More vibrant) */
+    --mood-positive: #89D3BB;
+    --mood-neutral: #B3C5F5;
+    --mood-negative: #F0A7B2;
+
+    /* Snackbar Colors (Neutral Grey with Pink Accents) */
+    --snackbar-bg: #2A2F36;
+    --snackbar-text: #F7EEF4;
+    --snackbar-border: #FF69B4;
+    --snackbar-icon: #FF69B4;
+}
 * {
     margin: 0;
     padding: 0;
@@ -97,42 +105,6 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-primary);
-        /* Primary Colors - Soft Amethyst (Dark) */
-        --primary-color: #D6C7FF;
-        --primary-hover: #C2B2F2;
-        --primary-light: #2A3240;
-
-        /* Secondary Colors */
-        --secondary-color: #93D7C4;
-        --secondary-hover: #7FC7B4;
-
-        /* Status Colors - Soft in dark */
-        --success-color: #89D3BB;
-        --danger-color: #F0A7B2;
-        --warning-color: #F0CF9D;
-        --info-color: #B3C5F5;
-
-        /* Background Colors - Deep, soft */
-        --body-bg: #0F151C;
-        --content-bg: #141D25;
-        --sidebar-bg: #101820;
-        --card-bg: #141D25;
-        --hover-bg: #1A232C;
-
-        /* Text Colors - High Contrast for Dark Mode */
-        --text-primary: #f5f0e9;
-        --text-secondary: #d2d7dd;
-        --text-muted: #aab3bc;
-        --text-on-dark: #ffffff;
-
-        /* Border and Shadow */
-        --border-color: #2B353F;
-        --border-light: #323E4A;
-
-        /* Mood Colors - Dark Theme (More vibrant) */
-        --mood-positive: #89D3BB;
-        --mood-neutral: #B3C5F5;
-        --mood-negative: #F0A7B2;
 
 /* Layout */
 .page {
@@ -370,6 +342,32 @@ textarea.form-control {
     opacity: 0.9;
 }
 
+/* Snackbar/Message Dialog (Neutral Grey with Pink Accents) */
+.mud-snackbar,
+.mud-snackbar .mud-snackbar-content,
+.mud-snackbar .mud-alert,
+.mud-snackbar .mud-alert-info,
+.mud-snackbar .mud-alert-success,
+.mud-snackbar .mud-alert-filled,
+.mud-snackbar .mud-alert-filled-info,
+.mud-snackbar .mud-alert-filled-success,
+.mud-snackbar .mud-alert .mud-alert-message,
+.mud-snackbar .mud-alert-info .mud-alert-message,
+.mud-snackbar .mud-alert-success .mud-alert-message,
+.mud-alert-info,
+.mud-alert-success {
+    background: var(--snackbar-bg) !important;
+    color: var(--snackbar-text) !important;
+    border: 1px solid var(--snackbar-border) !important;
+}
+.mud-snackbar .mud-alert .mud-alert-icon,
+.mud-snackbar .mud-alert-info .mud-alert-icon,
+.mud-snackbar .mud-alert-success .mud-alert-icon,
+.mud-alert-info .mud-alert-icon,
+.mud-alert-success .mud-alert-icon {
+    color: var(--snackbar-icon) !important;
+}
+
 .alert-error,
 .alert-danger {
     background-color: var(--danger-color);
@@ -378,26 +376,7 @@ textarea.form-control {
     opacity: 0.9;
 }
 
-/* Snackbar (Neutral for info) */
-.mud-snackbar .mud-alert-info,
-.mud-snackbar .mud-alert-info .mud-alert-message {
-    background: #ECE9E4 !important;
-    color: #2A2F33 !important;
-    border: 1px solid #D9D2C8 !important;
-}
-.mud-snackbar .mud-alert-info .mud-alert-icon {
-    color: #6F7C86 !important;
-}
-
-[data-theme="Dark"] .mud-snackbar .mud-alert-info,
-[data-theme="Dark"] .mud-snackbar .mud-alert-info .mud-alert-message {
-    background: #2A3138 !important;
-    color: #F5F0E9 !important;
-    border: 1px solid #3A444E !important;
-}
-[data-theme="Dark"] .mud-snackbar .mud-alert-info .mud-alert-icon {
-    color: #C9D4E4 !important;
-}
+/* Dark theme overrides are driven by variables above */
 
 /* Mood Badges */
 .mood-badge {
@@ -447,7 +426,7 @@ textarea.form-control {
     background: none;
     border: 1px solid var(--border-color);
     padding: 5px 10px;
-    border-radius: 15px;
+    border-radius: 6px;
     margin: 5px;
     cursor: pointer;
     transition: all 0.3s;
@@ -998,12 +977,12 @@ textarea.form-control {
 }
 
 .selected-date-info {
-    background: linear-gradient(135deg, #6B7FD1 0%, #86C5C2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
     padding: 30px;
     border-radius: 12px;
     margin-top: 30px;
-    box-shadow: 0 8px 24px rgba(107, 127, 209, 0.3);
+    box-shadow: 0 8px 24px rgba(255, 105, 180, 0.3);
 }
 
 .selected-date-info h3 {
@@ -1207,6 +1186,20 @@ textarea.form-control:focus {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Rectangular button overrides (pill/circle to rectangle) */
+.mud-button-root,
+.mud-icon-button,
+.mud-fab {
+    border-radius: 6px !important;
+}
+
+.mud-button-root.rounded-pill,
+.mud-icon-button.rounded-pill,
+button.rounded-pill,
+a.rounded-pill {
+    border-radius: 6px !important;
+}
+
 /* ==============================
    ENHANCED DASHBOARD STYLES
    ============================== */
@@ -1219,17 +1212,17 @@ textarea.form-control:focus {
 }
 
 .stat-card {
-    background: linear-gradient(135deg, #6B7FD1 0%, #86C5C2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
     padding: 25px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(107, 127, 209, 0.3);
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
     transition: all 0.3s ease;
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(107, 127, 209, 0.4);
+    box-shadow: 0 8px 25px rgba(255, 105, 180, 0.4);
 }
 
 .stat-card h3 {
@@ -1371,10 +1364,10 @@ textarea.form-control:focus {
     text-align: center;
     margin-bottom: 40px;
     padding: 30px;
-    background: linear-gradient(135deg, #6B7FD1 0%, #86C5C2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     border-radius: 15px;
     color: white;
-    box-shadow: 0 8px 30px rgba(107, 127, 209, 0.3);
+    box-shadow: 0 8px 30px rgba(255, 105, 180, 0.3);
 }
 
 .dashboard-header h1 {
@@ -1440,7 +1433,7 @@ textarea.form-control:focus {
 }
 
 .stat-card.total-entries {
-    background: linear-gradient(135deg, #6B7FD1 0%, #8CA9E8 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
 }
 
 .stat-card.current-streak {
@@ -2065,7 +2058,7 @@ textarea.form-control:focus {
     color: rgba(30, 38, 51, 0.3) !important;
 }
 
-.vibrant-gradient-blue { background: linear-gradient(135deg, #6B7FD1 0%, #8CA9E8 100%) !important; color: white !important; }
+.vibrant-gradient-blue { background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important; color: white !important; }
 .vibrant-gradient-coral { background: linear-gradient(135deg, #E9B86F 0%, #F2C1A3 100%) !important; color: white !important; }
 .vibrant-gradient-success { background: linear-gradient(135deg, #6BBF9E 0%, #94D6D2 100%) !important; color: white !important; }
 

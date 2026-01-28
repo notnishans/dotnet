@@ -5,8 +5,8 @@
 <PageTitle>Preferences - Reflecta</PageTitle>
 
 <div class="animate-fade-in">
-    <MudText Typo="Typo.h3" Class="fw-extra-bold peace-text mb-2">Journal Settings</MudText>
-    <MudText Typo="Typo.h6" Class="secondary-text opacity-60 mb-10">Adjust your profile, appearance, and export options.</MudText>
+    <MudText Typo="Typo.h3" Class="fw-extra-bold peace-text mb-2">Preferences</MudText>
+    <MudText Typo="Typo.h6" Class="secondary-text opacity-60 mb-10">Manage profile, appearance, and exports.</MudText>
 </div>
 
 <MudGrid>
@@ -15,17 +15,17 @@
         <div class="glass pa-8 rounded-xxl mb-6">
             <div class="d-flex align-center mb-6 gap-3">
                 <div class="icon-box primary">
-                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                    <MudIcon Icon="@Icons.Material.Rounded.Person" Size="Size.Small" />
                 </div>
-                <MudText Typo="Typo.h6" Class="fw-bold primary-text">Profile Details</MudText>
+                <MudText Typo="Typo.h6" Class="fw-bold primary-text">Profile</MudText>
             </div>
             <EditForm Model="@profileModel" OnValidSubmit="UpdateProfile">
                 <DataAnnotationsValidator />
-                <MudTextField @bind-Value="profileModel.Username" Label="Name" Variant="Variant.Outlined" Class="mb-4 rounded-lg" Placeholder="Your name" />
+                <MudTextField @bind-Value="profileModel.Username" Label="Display name" Variant="Variant.Outlined" Class="mb-4 rounded-lg" Placeholder="Your name" />
                 <MudTextField @bind-Value="profileModel.Email" Label="Email" Variant="Variant.Outlined" InputType="InputType.Email" Class="mb-6 rounded-lg" Placeholder="you@email.com" />
                 <div class="d-flex justify-end">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="rounded-pill px-8 py-3 shadow-primary glow-button">
-                        Save Profile
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="rounded-lg px-8 py-3 shadow-primary glow-button">
+                        Save Changes
                     </MudButton>
                 </div>
             </EditForm>
@@ -34,11 +34,11 @@
         <div class="glass pa-8 rounded-xxl mb-6">
             <div class="d-flex align-center mb-6 gap-3">
                 <div class="icon-box success">
-                    <MudIcon Icon="@Icons.Material.Filled.FileDownload" Size="Size.Small" />
+                    <MudIcon Icon="@Icons.Material.Rounded.Download" Size="Size.Small" />
                 </div>
-                <MudText Typo="Typo.h6" Class="fw-bold">Export Journal</MudText>
+                <MudText Typo="Typo.h6" Class="fw-bold">Export Center</MudText>
             </div>
-            <MudText Typo="Typo.body2" Class="mb-6 opacity-60">Create a portable archive of your reflections.</MudText>
+            <MudText Typo="Typo.body2" Class="mb-6 opacity-60">Generate a portable archive of your reflections.</MudText>
             <MudGrid Class="mb-6">
                 <MudItem xs="6">
                     <MudDatePicker @bind-Date="exportStartDate" Label="From" Variant="Variant.Outlined" Class="rounded-lg" />
@@ -47,8 +47,8 @@
                     <MudDatePicker @bind-Date="exportEndDate" Label="To" Variant="Variant.Outlined" Class="rounded-lg" />
                 </MudItem>
             </MudGrid>
-            <MudButton OnClick="ExportToPdf" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.PictureAsPdf" Class="rounded-pill px-8 py-3 shadow-success">
-                Create PDF Export
+            <MudButton OnClick="ExportToPdf" Variant="Variant.Filled" Color="Color.Default" StartIcon="@Icons.Material.Rounded.PictureAsPdf" Class="rounded-lg px-8 py-3 export-btn-gray">
+                Generate PDF
             </MudButton>
         </div>
     </MudItem>
@@ -57,18 +57,18 @@
         <div class="glass pa-8 rounded-xxl">
             <div class="d-flex align-center mb-6 gap-3">
                 <div class="icon-box secondary">
-                    <MudIcon Icon="@Icons.Material.Filled.Palette" Size="Size.Small" />
+                    <MudIcon Icon="@Icons.Material.Rounded.Palette" Size="Size.Small" />
                 </div>
                 <MudText Typo="Typo.h6" Class="fw-bold">Appearance</MudText>
             </div>
-            <MudText Typo="Typo.body2" Class="mb-4 opacity-60">Choose a look that fits your focus.</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4 opacity-60">Switch the visual mode to match your focus.</MudText>
             <div class="theme-selector d-flex gap-4 mb-6">
                 <div class="theme-pill @(selectedTheme == "Light" ? "active" : "")" @onclick='() => selectedTheme = "Light"'>
-                    <MudIcon Icon="@Icons.Material.Filled.LightMode" Size="Size.Small" Class="mr-2" />
-                    <span> Day</span>
+                    <MudIcon Icon="@Icons.Material.Rounded.LightMode" Size="Size.Small" Class="mr-2" />
+                    <span> Daylight</span>
                 </div>
                 <div class="theme-pill @(selectedTheme == "Dark" ? "active" : "")" @onclick='() => selectedTheme = "Dark"'>
-                    <MudIcon Icon="@Icons.Material.Filled.DarkMode" Size="Size.Small" Class="mr-2" />
+                    <MudIcon Icon="@Icons.Material.Rounded.DarkMode" Size="Size.Small" Class="mr-2" />
                     <span> Night</span>
                 </div>
             </div>
@@ -105,7 +105,7 @@
     .icon-box.primary { background: rgba(var(--mud-palette-primary-rgb), 0.1); color: var(--mud-palette-primary); }
     .icon-box.secondary { background: rgba(var(--mud-palette-secondary-rgb), 0.1); color: var(--mud-palette-secondary); }
     .icon-box.tertiary { background: rgba(var(--mud-palette-tertiary-rgb), 0.1); color: var(--mud-palette-tertiary); }
-    .icon-box.success { background: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success); }
+    .icon-box.success { background: rgba(107, 114, 128, 0.12); color: #6B7280; }
     .icon-box.warning { background: rgba(var(--mud-palette-warning-rgb), 0.1); color: var(--mud-palette-warning); }
 
     .theme-pill {
@@ -135,6 +135,16 @@
 
     .shadow-primary { box-shadow: 0 8px 16px -4px rgba(var(--mud-palette-primary-rgb), 0.4); }
     .shadow-success { box-shadow: 0 8px 16px -4px rgba(var(--mud-palette-success-rgb), 0.4); }
+
+    .export-btn-gray {
+        background: #6B7280 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 10px 20px -6px rgba(107, 114, 128, 0.45);
+    }
+    .export-btn-gray:hover {
+        background: #4B5563 !important;
+        box-shadow: 0 14px 24px -8px rgba(75, 85, 99, 0.5);
+    }
 
     .glow-button {
         transition: all 0.3s ease;
