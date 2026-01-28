@@ -21,8 +21,8 @@
             <MudText Typo="Typo.h3" Class="fw-bold primary-gradient-text">Welcome back, @AuthState.GetCurrentUsername()</MudText>
             <MudText Typo="Typo.h6" Class="secondary-text mt-1 opacity-75">A quiet overview of your recent reflections and progress.</MudText>
         </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.EditNote" Size="Size.Large" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="rounded-pill px-8 py-3 shadow-lg hover-scale">
-            Write Reflection
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Medium" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="new-entry-button">
+            New Entry
         </MudButton>
         
     </div>
@@ -38,7 +38,7 @@
         <!-- Stats Row -->
         <MudGrid Class="mb-10">
             <MudItem xs="12" sm="6" md="3">
-                <div class="stat-card glass shadow-lg border-light vibrant-card">
+                <div class="stat-card glass shadow-lg border-light vibrant-card stat-card-entries">
                     <div class="stat-content">
                         <MudText Typo="Typo.h3" Class="fw-extra-bold primary-text">@(analytics?.TotalEntries ?? 0)</MudText>
                         <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Total Entries</MudText>
@@ -49,7 +49,7 @@
                 </div>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <div class="stat-card glass shadow-lg border-light vibrant-card">
+                <div class="stat-card glass shadow-lg border-light vibrant-card stat-card-streak">
                     <div class="stat-content">
                         <MudText Typo="Typo.h3" Class="fw-extra-bold secondary-text">@(analytics?.CurrentStreak ?? 0)</MudText>
                         <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Current Streak</MudText>
@@ -60,7 +60,7 @@
                 </div>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <div class="stat-card glass shadow-sm border-light">
+                <div class="stat-card glass shadow-sm border-light stat-card-longest">
                     <div class="stat-content">
                         <MudText Typo="Typo.h3" Class="fw-extra-bold success-text">@(analytics?.LongestStreak ?? 0)</MudText>
                         <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Longest Streak</MudText>
@@ -71,7 +71,7 @@
                 </div>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <div class="stat-card glass shadow-sm border-light">
+                <div class="stat-card glass shadow-sm border-light stat-card-missed">
                     <div class="stat-content">
                         <MudText Typo="Typo.h3" Class="fw-extra-bold tertiary-text">@(analytics?.MissedDays ?? 0)</MudText>
                         <MudText Typo="Typo.caption" Class="uppercase-tracking secondary-text">Days Missed</MudText>
@@ -170,26 +170,74 @@
     }
 
     .stat-card.glass {
-        padding: 1.5rem;
-        border-radius: 1.25rem;
+        padding: 1.9rem 2rem;
+        border-radius: 1.6rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         background: var(--mud-palette-surface);
-        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.05);
-        height: 100%;
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.08);
+        min-height: 120px;
+        position: relative;
+        overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .stat-card.glass:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1);
-        border-color: rgba(var(--mud-palette-primary-rgb), 0.2);
+        transform: translateY(-6px);
+        box-shadow: 0 14px 24px -10px rgba(0,0,0,0.12);
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.45);
+        outline: 1px solid rgba(var(--mud-palette-secondary-rgb), 0.35);
+    }
+
+    .stat-card.glass::before,
+    .stat-card.glass::after {
+        content: "";
+        position: absolute;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--mud-palette-background);
+        top: 50%;
+        transform: translateY(-50%);
+        box-shadow: inset 0 0 0 1px rgba(var(--mud-palette-divider-rgb), 0.12);
+    }
+    .stat-card.glass::before { left: -17px; }
+    .stat-card.glass::after { right: -17px; }
+
+    .stat-card-entries {
+        background: linear-gradient(135deg, #F3EEFF 0%, #E9F3FF 100%);
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.15);
+    }
+    .stat-card-streak {
+        background: linear-gradient(135deg, #EAF9F4 0%, #F2F9F7 100%);
+        border-color: rgba(var(--mud-palette-secondary-rgb), 0.15);
+    }
+    .stat-card-longest {
+        background: linear-gradient(135deg, #FFF1EA 0%, #FFF7ED 100%);
+        border-color: rgba(var(--mud-palette-tertiary-rgb), 0.15);
+    }
+    .stat-card-missed {
+        background: linear-gradient(135deg, #F6F1EC 0%, #FFF8F2 100%);
+        border-color: rgba(var(--mud-palette-divider-rgb), 0.2);
+    }
+    .stat-card-entries .mud-typography,
+    .stat-card-streak .mud-typography,
+    .stat-card-longest .mud-typography,
+    .stat-card-missed .mud-typography {
+        color: #2A2F33 !important;
+    }
+
+    [data-theme="Dark"] .stat-card-entries .mud-typography,
+    [data-theme="Dark"] .stat-card-streak .mud-typography,
+    [data-theme="Dark"] .stat-card-longest .mud-typography,
+    [data-theme="Dark"] .stat-card-missed .mud-typography {
+        color: #F5F0E9 !important;
     }
 
     .stat-icon-wrapper {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;

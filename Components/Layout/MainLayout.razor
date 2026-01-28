@@ -16,8 +16,12 @@
 
 <MudLayout>
     <MudAppBar Elevation="0" Class="glass-appbar px-4 py-2">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" Class="hover-rotate" />
-        <MudText Typo="Typo.h5" Class="title-gradient fw-extra-bold ml-2">Reflecta</MudText>
+        <div class="d-flex align-center gap-3">
+            <div class="logo-circle">
+                <MudIcon Icon="@Icons.Material.Filled.AutoStories" Color="Color.Primary" Size="Size.Medium" />
+            </div>
+            <MudText Typo="Typo.h5" Class="title-gradient fw-extra-bold">JournalApp</MudText>
+        </div>
         <MudSpacer />
         @if (AuthState.IsAuthenticated)
         {
@@ -31,14 +35,6 @@
     </MudAppBar>
     
     <MudDrawer @bind-Open="_drawerOpen" Elevation="0" ClipMode="DrawerClipMode.Always" Class="premium-drawer">
-        <MudDrawerHeader Class="pa-6">
-            <div class="d-flex align-center gap-3">
-                <div class="logo-circle">
-                    <MudIcon Icon="@Icons.Material.Filled.AutoStories" Color="Color.Primary" Size="Size.Medium" />
-                </div>
-                <MudText Typo="Typo.h6" Class="fw-extra-bold primary-text">Reflecta</MudText>
-            </div>
-        </MudDrawerHeader>
         <div class="nav-container px-4">
             <NavMenu />
         </div>

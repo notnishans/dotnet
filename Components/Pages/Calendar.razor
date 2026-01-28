@@ -22,8 +22,8 @@
         </div>
         <div class="d-flex gap-2">
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Today" OnClick="() => currentDate = DateTime.Today" Class="rounded-pill px-6">Jump to Today</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.EditNote" Size="Size.Large" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="rounded-pill px-8 shadow-lg hover-scale">
-                Write Reflection
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Medium" OnClick='(() => Navigation.NavigateTo("/create-entry"))' Class="new-entry-button">
+                New Entry
             </MudButton>
         </div>
     </div>

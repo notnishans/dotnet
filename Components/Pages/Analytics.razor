@@ -124,6 +124,46 @@
                 </div>
             </MudItem>
 
+            <!-- Mood Charts -->
+            <MudItem xs="12" md="5">
+                <div class="glass pa-8 rounded-xxl shadow-xl h-100">
+                    <div class="d-flex align-center justify-space-between mb-8">
+                        <div>
+                            <MudText Typo="Typo.h5" Class="fw-bold">Mood Charts</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="opacity-75">Bar and pie views of mood distribution.</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.PieChart" Color="Color.Primary" />
+                    </div>
+
+                    <div class="mood-chart-grid">
+                        <div class="chart-card">
+                            <MudText Typo="Typo.subtitle2" Class="fw-bold mb-4">Mood Pie Chart</MudText>
+                            <div class="frequent-mood">
+                                <span class="label">Most frequent mood</span>
+                                <span class="value">@(string.IsNullOrWhiteSpace(analytics.MostFrequentMood) ? "No data" : analytics.MostFrequentMood)</span>
+                                <span class="count" hidden="@(string.IsNullOrWhiteSpace(analytics.MostFrequentMood))">@analytics.MostFrequentMoodCount entries</span>
+                            </div>
+                            <div class="pie-wrap">
+                                <div class="pie" style="background: conic-gradient(
+                                    #7CC9B0 0% @analytics.PositiveMoodPercentage%,
+                                    #A2B5F2 @analytics.PositiveMoodPercentage% @(analytics.PositiveMoodPercentage + analytics.NeutralMoodPercentage)%,
+                                    #E8929F @(analytics.PositiveMoodPercentage + analytics.NeutralMoodPercentage)% 100%);">
+                                </div>
+                                <div class="pie-center">
+                                    <div class="pie-total">@analytics.TotalEntries</div>
+                                    <div class="pie-label">entries</div>
+                                </div>
+                            </div>
+                            <div class="pie-legend">
+                                <span><i class="legend-dot positive"></i>Positive</span>
+                                <span><i class="legend-dot neutral"></i>Neutral</span>
+                                <span><i class="legend-dot negative"></i>Negative</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </MudItem>
+
             <!-- Word Count Trends -->
             <MudItem xs="12">
                 <div class="glass pa-8 rounded-xxl shadow-xl">
@@ -209,10 +249,10 @@
 
     .metric-card {
         padding: 1.5rem;
-        border-radius: 1.25rem;
+        border-radius: 1.6rem;
         position: relative;
         overflow: hidden;
-        color: white;
+        color: #2A2F33;
         min-height: 140px;
         display: flex;
         align-items: center;
@@ -222,9 +262,26 @@
     }
     
     .metric-card:hover { 
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+        transform: translateY(-6px);
+        box-shadow: 0 14px 24px -10px rgba(0,0,0,0.12);
+        border-color: rgba(var(--mud-palette-primary-rgb), 0.45);
+        outline: 1px solid rgba(var(--mud-palette-secondary-rgb), 0.35);
     }
+
+    .metric-card::before,
+    .metric-card::after {
+        content: "";
+        position: absolute;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--mud-palette-background);
+        top: 50%;
+        transform: translateY(-50%);
+        box-shadow: inset 0 0 0 1px rgba(var(--mud-palette-divider-rgb), 0.12);
+    }
+    .metric-card::before { left: -17px; }
+    .metric-card::after { right: -17px; }
 
     .peace-card { background: linear-gradient(135deg, #6BBF9E 0%, #94D6D2 100%); }
     .serenity-card { background: linear-gradient(135deg, #6B7FD1 0%, #8CA9E8 100%); }
@@ -238,10 +295,91 @@
         bottom: -10px;
         right: -10px;
         font-size: 100px !important;
-        opacity: 0.15;
+        opacity: 0.18;
         transform: rotate(-10deg);
         z-index: 1;
     }
+
+    .metric-card .mud-typography { color: inherit; }
+
+    .vibrant-gradient-blue {
+        background: linear-gradient(135deg, #F3EEFF 0%, #E9F3FF 100%) !important;
+        border: 1px solid #E7E1D8 !important;
+    }
+    .vibrant-gradient-coral {
+        background: linear-gradient(135deg, #FFF1EA 0%, #FFF7ED 100%) !important;
+        border: 1px solid #E7E1D8 !important;
+    }
+    .vibrant-gradient-success {
+        background: linear-gradient(135deg, #EAF9F4 0%, #F2F9F7 100%) !important;
+        border: 1px solid #E7E1D8 !important;
+    }
+    [data-theme="Dark"] .metric-card { color: #F5F0E9; }
+    [data-theme="Dark"] .vibrant-gradient-blue {
+        background: linear-gradient(135deg, rgba(214,199,255,0.15) 0%, rgba(163,201,246,0.12) 100%) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+    }
+    [data-theme="Dark"] .vibrant-gradient-coral {
+        background: linear-gradient(135deg, rgba(244,195,174,0.18) 0%, rgba(240,207,157,0.12) 100%) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+    }
+    [data-theme="Dark"] .vibrant-gradient-success {
+        background: linear-gradient(135deg, rgba(147,215,196,0.18) 0%, rgba(124,201,176,0.12) 100%) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+    }
+
+    .mood-chart-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .chart-card {
+        background: rgba(var(--mud-palette-surface-rgb), 0.6);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.08);
+        border-radius: 16px;
+        padding: 16px;
+    }
+    .pie-wrap {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        margin: 8px auto 16px;
+    }
+    .pie {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 12px rgba(var(--mud-palette-surface-rgb), 0.9);
+    }
+    .pie-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    .pie-total { font-size: 22px; font-weight: 800; }
+    .pie-label { font-size: 12px; color: var(--mud-palette-text-secondary); }
+    .pie-legend { display: flex; gap: 12px; justify-content: center; font-size: 12px; color: var(--mud-palette-text-secondary); }
+    .pie-legend .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .pie-legend .legend-dot.positive { background: #7CC9B0; }
+    .pie-legend .legend-dot.neutral { background: #A2B5F2; }
+    .pie-legend .legend-dot.negative { background: #E8929F; }
+
+    .frequent-mood {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        background: rgba(var(--mud-palette-primary-rgb), 0.06);
+        border: 1px solid rgba(var(--mud-palette-divider-rgb), 0.08);
+        font-size: 0.85rem;
+    }
+    .frequent-mood .label { color: var(--mud-palette-text-secondary); font-weight: 600; }
+    .frequent-mood .value { color: var(--mud-palette-primary); font-weight: 700; }
+    .frequent-mood .count { color: var(--mud-palette-text-secondary); font-weight: 600; }
 
     .streak-fire {
         font-size: 2rem;

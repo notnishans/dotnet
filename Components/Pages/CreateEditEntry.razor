@@ -170,7 +170,8 @@
                                 <MudTextField T="string" Placeholder="Add a theme..." 
                                                Variant="Variant.Text" Immediate="true" 
                                                @onkeyup="HandleTagKeyUp" @bind-Value="newTag" 
-                                               Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Add" />
+                                               Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Add"
+                                               OnAdornmentClick="HandleTagAddClick" />
                             </div>
                             <div class="tag-chips d-flex flex-wrap gap-2 mb-4">
                                 @if (!string.IsNullOrEmpty(entry.Tags))

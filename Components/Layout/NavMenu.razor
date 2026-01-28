@@ -14,15 +14,15 @@
         </div>
 
         <MudText Typo="Typo.caption" Class="nav-group-header px-4 mb-2">WORKSPACE</MudText>
-        <MudNavLink href="dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SpaceDashboard" Class="nav-link-premium">Overview</MudNavLink>
+        <MudNavLink href="dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.SpaceDashboard" Class="nav-link-premium">Dashboard</MudNavLink>
         <MudNavLink href="entries" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" Class="nav-link-premium">Journal Library</MudNavLink>
         <MudNavLink href="calendar" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Event" Class="nav-link-premium">Memory Calendar</MudNavLink>
         
         <MudText Typo="Typo.caption" Class="nav-group-header px-4 mt-6 mb-2">INSIGHTS</MudText>
         <MudNavLink href="analytics" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueryStats" Class="nav-link-premium">Insights Studio</MudNavLink>
         
-        <MudText Typo="Typo.caption" Class="nav-group-header px-4 mt-6 mb-2">PREFERENCES</MudText>
-        <MudNavLink href="settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Tune" Class="nav-link-premium">Preferences</MudNavLink>
+        <MudText Typo="Typo.caption" Class="nav-group-header px-4 mt-6 mb-2">SETTINGS</MudText>
+        <MudNavLink href="settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Tune" Class="nav-link-premium">Settings</MudNavLink>
     </MudNavMenu>
 </div>
 
@@ -51,6 +51,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         font-weight: 600 !important;
         color: var(--mud-palette-text-secondary) !important;
+        white-space: nowrap;
     }
     .nav-link-premium:hover {
         background: rgba(var(--mud-palette-primary-rgb), 0.08) !important;
